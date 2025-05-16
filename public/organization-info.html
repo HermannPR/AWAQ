@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Información de organización - Mawi</title>
+    <meta name="description" content="Información de organización en Mawi" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="mawi-auth-container">
+      <div class="mawi-auth-card">
+        <h1>¿Con quién trabajas?</h1>
+        <p class="subtitle">Completa tu usuario agregando esta información</p>
+
+        <form>
+          <div class="form-group">
+            <label for="org-name">Nombre de la organización*</label>
+            <input
+              id="org-name"
+              type="text"
+              placeholder="Escribe el nombre de tu organización"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="org-description">Descripción de la organización*</label>
+            <textarea
+              id="org-description"
+              placeholder="Escribe una breve descripción de tu organización. Max 200 palabras"
+              required
+            ></textarea>
+          </div>
+
+          <button type="submit" class="mawi-button">
+            Guardar
+          </button>
+        </form>
+
+        <div class="help-text">
+          <p>
+            ¿Necesitas ayuda? <a href="#" class="mawi-link">Contacta con nosotros</a>
+          </p>
+        </div>
+      </div>
+    </div>
+    <!-- Keep the GPT Engineer script tag -->
+    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+  </body>
+</html>
