@@ -18,7 +18,7 @@
           </div>
         </div>
 
-        <button type="button" class="mawi-button with-icon">
+        <button type="button" class="mawi-button with-icon" id="next-btn">
           Siguiente <span class="icon">→</span>
         </button>
 
@@ -31,5 +31,10 @@
     </div>
     <!-- Keep the GPT Engineer script tag -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+    <script>
+      document.getElementById('next-btn').addEventListener('click', function() {
+        window.location.href = 'user-location.html';
+      });
+    </script>
   </body>
 </html>
