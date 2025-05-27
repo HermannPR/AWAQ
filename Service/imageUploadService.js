@@ -57,7 +57,6 @@ async function uploadedImagesLog(images) {
  * @returns {Promise<QueryResult>} -
  */
 async function uploadedImageLog(image) {
-    console.log("📸 Imagen recibida en uploadedImageLog:", image);
 
     if (!image || typeof image !== 'object' || !image.base64 || !image.name || !image.usuario_carga) {
         return new QueryResult(false, [], 0, 0, 'Invalid image object');
@@ -91,7 +90,7 @@ async function uploadedImageLog(image) {
         return result;
 
     } catch (err) {
-        cconsole.error('❌ Error en uploadedImageLog:', {
+        console.error('❌ Error en uploadedImageLog:', {
         error: err,
         message: err?.message,
         stack: err?.stack

@@ -1,4 +1,4 @@
-const SAService = require('../../Services/SAdminService');
+const SAService = require('../../Service/SAdminService');
 require('dotenv').config();
 
 /**
@@ -91,8 +91,8 @@ async function getUsersNoAceptados(req, res)
         const result = await SAService.getUsersNoAceptados();
         return res.status(200).json({
             "status" : "success",
-            "total" : result.total,
-            "records" : result.data
+            "total" : result.rows.length,
+            "records" : result.rows
         });
     }
     catch(error)
@@ -133,4 +133,4 @@ async function AceptarUsuario(req, res)
     }
 }
 
-module.exports = (getRegistros, getRegistrosPorUsuario, updateRegistro, getUsersNoAceptados, AceptarUsuario);
+module.exports = {getRegistros, getRegistrosPorUsuario, updateRegistro, getUsersNoAceptados, AceptarUsuario};

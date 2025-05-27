@@ -10,18 +10,20 @@ async function execLogin(req, res) {
     console.log('Login request body:', req.body);
     const result = await userService.getValores(email);
     console.log("getValores:", result.status, result.rows.length);
-    if (!result.status) {
+    if (!result.status|| result.rows.length === 0) {
         return res.status(401).json({message: 'user not found'});
     }
-    estado = result.rows[0].estado;
-    rol = result.rows[0].rol;
+
+
+    const estado = result.rows[0].estado;
+    const rol = result.rows[0].rol;
 
     const user = await hashService.isValidUser(email, password);
     if (!user) {
         return res.status(401).json({message: 'Invalid credentials'});
     }
         const token = jwt.sign(
-        {id: user.id, email: user.email, nombre: user.nombre},
+        {id: user.id, email: user.email, nombre: user.nombre, rol: rol},
         SECRET,
         {   expiresIn: '1h' }
     );
@@ -59,6 +61,7 @@ async function execLogin(req, res) {
  * @param {*} next
  * @returns
  */
+
 async function authenticateTokenAdmin(req, res, next)
 {
     let token = null;
@@ -80,6 +83,7 @@ async function authenticateTokenAdmin(req, res, next)
         }
     })
 }
+
 /**
  * @param {*} req 
  * @param {*} res 

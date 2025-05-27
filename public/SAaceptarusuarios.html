@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+
+
+    </head>
+    <body>
+        <h1>HOLA</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="user-table-body">
+            </tbody>
+        </table>
+                <script>
+                    async function loadUsers() {
+                    try {
+                        const token = localStorage.getItem('token');
+                        if (!token) {
+                            console.error('No token found in localStorage');
+                            return;
+                        }
+
+                        const response = await fetch('/Consultas/api/getUsersNA', {
+                            method: 'GET',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        console.log('Response status:', response.status);
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+
+                        const data = await response.json();
+                        console.log('Response data:', data);
+
+                        const users = data.records || [];
+                        console.log('Users:', users);
+
+                        const tbody = document.getElementById('user-table-body');
+                    tbody.innerHTML = '';
+                    users.forEach(user => {
+                        const row = document.createElement('tr');
+                        const userId = user.idUsuario;
+                        row.innerHTML = `
+                            <td>${user.idUsuario}</td>
+                            <td>${user.Nombre + ' ' + user.Apellidos}</td>
+                            <td>${user.email}</td>
+                            <td>${user.rol}</td>
+                            <td>${user.estado}</td>
+                            <td>
+                                <button onclick="editUser(${userId})">Edit</button>
+                                <button onclick="deleteUser(${userId})">Delete</button>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                    }catch (error) {
+                        console.error('Error loading users:', error);
+                }
+            }
+
+                function editUser(userId) {
+                    // Implement the edit user functionality
+                    console.log('Edit user with ID:', userId);
+                }
+                function deleteUser(userId) {
+                    // Implement the delete user functionality
+                    console.log('Delete user with ID:', userId);
+                }
+
+                window.addEventListener('DOMContentLoaded', function() {
+                loadUsers();
+                });
+
+                loadUsers();
+                </script>
+    </body>
+</html>

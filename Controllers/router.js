@@ -3,7 +3,7 @@ const express = require('express');
 const usersRest = require('./API/usersRestController');
 const imageRest = require('./API/imageRestController');
 const constants = require("../constants");
-
+const adminRest = require('./API/SAdminRestController');
 const formRest = require('./API/formRestController');
 
 
@@ -33,4 +33,7 @@ router.post(constants.contextURL + constants.apiURL + "/insertFaunaPuntoConteo",
 router.post(constants.contextURL + constants.apiURL + "/insertFaunaTransecto", usersRest.authenticateToken, formRest.insertFaunaTransecto);
 router.post(constants.contextURL + constants.apiURL + "/insertValidacionCobertura", usersRest.authenticateToken, formRest.insertValidacionCobertura);
 router.post(constants.contextURL + constants.apiURL + "/insertParcelaVegetacion", usersRest.authenticateToken, formRest.insertParcelaVegetacion);
+//Super admin
+router.get(constants.contextURL + constants.apiURL + "/getUsersNA", usersRest.authenticateTokenSAdmin, adminRest.getUsersNoAceptados);
+
 module.exports = router;

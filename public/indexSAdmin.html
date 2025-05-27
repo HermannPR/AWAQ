@@ -1,11 +1,237 @@
 <!DOCTYPE html>
 <html>
-    <head>
+<head>
+    <title>Asistente Explorador de Anteproyectos - Mawi</title>
+    <meta name="description" content="Asistente Explorador de Anteproyectos" />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 18px;
+        }
+        .progress-bar {
+            width: 300px;
+            height: 20px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            margin: 20px auto;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #007bff;
+            width: 0%;
+            transition: width 0.1s ease;
+            border-radius: 10px;
+        }
+        .error {
+            color: red;
+            text-align: center;
+            padding: 20px;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+            margin: 20px;
+        }
+        .content {
+            text-align: center;
+            padding: 20px;
+        }
+        .admin-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .admin-button {
+            padding: 15px 30px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .admin-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <!-- Estado de carga con barra de progreso -->
+    <div id="loading" class="loading">
+        <h2>🔐 Verificando autenticación...</h2>
+        <p>Por favor espera mientras verificamos tus permisos.</p>
+        <div class="progress-bar">
+            <div id="progress-fill" class="progress-fill"></div>
+        </div>
+        <p id="loading-text">Iniciando verificación...</p>
+    </div>
+    
+    <!-- Estado de error -->
+    <div id="error" class="error" style="display: none;">
+        <h2>❌ Error de autenticación</h2>
+        <p id="error-message"></p>
+        <button onclick="redirectToLogin()" class="admin-button">Ir al Login</button>
+    </div>
+    
+    <!-- Contenido principal (solo para Super Admin) -->
+    <div id="content" class="content" style="display: none;">
+        <h1>🔧 Panel de Super Administrador</h1>
+        <p>Bienvenido al panel de control de Super Admin</p>
+        
+        <div class="admin-buttons">
+            <a href="SAaceptarusuarios.html" class="admin-button">
+                👥 Aceptar Usuarios Super Admin
+            </a>
+            <a href="dashboard.html" class="admin-button">
+                📊 Dashboard
+            </a>
+        </div>
+    </div>
 
+    <script>
+        // 1. FUNCIÓN PARA VERIFICAR AUTENTICACIÓN
+        async function checkAuthentication() {
+            try {
+                const token = localStorage.getItem('token');
+                console.log('Verificando token...');
+                
+                if (!token) {
+                    throw new Error('No hay token de autenticación. Debes iniciar sesión.');
+                }
 
+                // Decodificar el token para verificar rol
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                console.log('Token payload:', payload);
+                
+                // Verificar que el rol sea Super Admin (rol 4)
+                if (payload.rol !== 4) {
+                    throw new Error(`Acceso denegado. Tu rol (${payload.rol}) no tiene permisos de Super Admin.`);
+                }
+                
+                // Verificar que el token no haya expirado
+                const currentTime = Date.now() / 1000;
+                if (payload.exp && payload.exp < currentTime) {
+                    throw new Error('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
+                }
 
-    </head>
-    <body>
-        <h1>HOLA</h1>
-    </body>
+                // Verificar token con el servidor
+                console.log('Verificando token con el servidor...');
+                const response = await fetch('/Consultas/api/getUsersNA', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        throw new Error('Token inválido o expirado. Inicia sesión nuevamente.');
+                    } else if (response.status === 403) {
+                        throw new Error('No tienes permisos para acceder a esta página.');
+                    } else {
+                        throw new Error(`Error del servidor: ${response.status}. Intenta más tarde.`);
+                    }
+                }
+
+                console.log('Autenticación exitosa');
+                return true;
+
+            } catch (error) {
+                console.error('Error de autenticación:', error);
+                showError(error.message);
+                return false;
+            }
+        }
+
+        // 2. FUNCIONES DE UTILIDAD
+        function showError(message) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('content').style.display = 'none';
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('error-message').textContent = message;
+        }
+
+        function showContent() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('content').style.display = 'block';
+        }
+
+        function redirectToLogin() {
+            // Limpiar token inválido
+            localStorage.removeItem('token');
+            // Redirigir al login
+            window.location.href = 'login.html';
+        }
+
+        // 3. INICIALIZACIÓN CON LOADING ANIMADO DE 3 SEGUNDOS
+        async function initializePage() {
+            console.log('=== Inicializando página de Super Admin ===');
+            
+            // Mostrar loading
+            document.getElementById('loading').style.display = 'block';
+            
+            // Simular progreso durante 3 segundos
+            const progressFill = document.getElementById('progress-fill');
+            const loadingText = document.getElementById('loading-text');
+            
+            const steps = [
+                { progress: 20, text: 'Verificando token...' },
+                { progress: 50, text: 'Validando permisos...' },
+                { progress: 80, text: 'Conectando con servidor...' },
+                { progress: 100, text: 'Finalizando verificación...' }
+            ];
+            
+            for (let i = 0; i < steps.length; i++) {
+                await new Promise(resolve => setTimeout(resolve, 750)); // 750ms por paso = 3 segundos total
+                progressFill.style.width = steps[i].progress + '%';
+                loadingText.textContent = steps[i].text;
+            }
+            
+            // Ahora ejecutar la verificación real
+            const isAuthenticated = await checkAuthentication();
+            
+            if (isAuthenticated) {
+                console.log('✅ Autenticación exitosa, mostrando contenido...');
+                showContent();
+            } else {
+                console.log('❌ Autenticación fallida');
+                // El error ya se muestra en checkAuthentication()
+            }
+        }
+
+        // 4. EJECUTAR AL CARGAR LA PÁGINA
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM cargado, inicializando...');
+            initializePage();
+        });
+
+        // También ejecutar inmediatamente por si acaso
+        initializePage();
+
+        // 5. VERIFICAR AUTENTICACIÓN CADA 5 MINUTOS (opcional)
+        setInterval(async function() {
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    const currentTime = Date.now() / 1000;
+                    
+                    // Si el token expira en menos de 5 minutos, avisar
+                    if (payload.exp && (payload.exp - currentTime) < 300) {
+                        alert('Tu sesión expirará pronto. Por favor, guarda tu trabajo.');
+                    }
+                } catch (error) {
+                    console.error('Error verificando expiración:', error);
+                }
+            }
+        }, 300000); // Cada 5 minutos
+    </script>
+</body>
 </html>

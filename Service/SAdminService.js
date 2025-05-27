@@ -129,7 +129,7 @@ async function getUsersNoAceptados()
     try
     {
         let query = "SELECT * FROM usuario WHERE estado = ?";
-        let params = [0];
+        let params = ['P']; 
         qResult = await dataSource.getDataWithParams(query, params);
     }
     catch(err)
