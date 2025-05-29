@@ -7,7 +7,7 @@ async function getRegistros(idUsuario) {
     let qResult;
     try 
     {
-        let query = "SELECT * FROM formularioInicial WHERE idUsuario = ?";
+        let query = "SELECT * FROM formularioInicial WHERE idCreador = ?";
         let params = [idUsuario];
         qResult = await dataSource.getDataWithParams(query, params);
     }
@@ -18,10 +18,10 @@ async function getRegistros(idUsuario) {
     return qResult;
 }
 /**
- * @param {*} fi
+ * @param {int} idUsuario
  * @returns 
 */
-async function getRegistrosPorUsuario(fi) {
+async function getRegistrosPorUsuario(idUsuario) {
     const allowedT = [
         'variables_climaticas',
         'camaras_trampa',
@@ -29,20 +29,30 @@ async function getRegistrosPorUsuario(fi) {
         'parcela_vegetacion',
         'fauna_transecto',
         'fauna_punto_conteo',
-        'fauna_busqueda_libre']
-        if(!allowedT.includes(fi.tipoRegistro)) {
-            throw new Error('Tabla no existente');
-        }
+        'fauna_busqueda_libre'];
     let qResult;
     try
     {
+        let query1 = "SELECT tipoRegistro FROM formularioInicial WHERE idCreador = ?";
+        let params1 = [idUsuario];
+        let result1 = await dataSource.getDataWithParams(query1, params1);
+        if (result1.getRows().length === 0) {
+            throw new Error('No se encontró el formulario inicial para el usuario especificado');
+        }
+        const tipoRegistro = result1.getRows()[0].tipoRegistro;
+        if(!allowedT.includes(tipoRegistro))
+        {
+            throw new Error('Tipo de registro no permitido');
+        }
+
         let query = `
-        SELECT T.* 
-        FROM ${fi.tipoRegistro} T
-        JOIN formularioInicial F ON T.idRegistro = F.idFormIn
-        WHERE F.idCreador = ?
+        SELECT fi.*, R.*, u.*
+        FROM usuario u
+        JOIN formularioInicial fi ON u.idUsuario = fi.idCreador
+        JOIN ${tipoRegistro} R ON fi.idFormIn = R.idRegistro
+        WHERE u.idUsuario = ?
         `;
-        let params = [fi.idCreador];
+        let params = [idUsuario];
         qResult = await dataSource.getDataWithParams(query, params);
     }
     catch(err)
@@ -71,7 +81,7 @@ async function updateRegistro(form, idRegistro) {
         let query, params, qResult2;
         const r2 = await getRegistrosPorUsuario(form);
 
-        if (r2.success) {
+        if (r2.getStatus()) {
             switch(form.tipoRegistro) {
                 case 'variables_climaticas':
                     query = "UPDATE variables_climaticas SET zona = ?, pluviosidadMm = ?, temperaturaMaxima = ?, humedadMaxima = ?, temperaturaMinima = ?, nivelQuebradaMt = ? WHERE idRegistro = ?";

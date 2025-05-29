@@ -16,8 +16,8 @@ const router = express.Router();
 
 //Rutas de la API
 router.post(constants.contextURL + constants.apiURL + "/login", usersRest.execLogin);
-router.get(constants.contextURL + constants.apiURL + "/getusers", usersRest.authenticateTokenSAdmin, usersRest.getUsers);
-router.post(constants.contextURL + constants.apiURL + "/findeUser", usersRest.authenticateToken, usersRest.findUser);
+router.get(constants.contextURL + constants.apiURL + "/getusers", usersRest.authenticateTokenAdmin, usersRest.getUsers);
+router.post(constants.contextURL + constants.apiURL + "/findeUser", usersRest.authenticateTokenAdmin, usersRest.findUser);
 router.post(constants.contextURL + constants.apiURL + "/insertUser", usersRest.insertUser);
 router.put(constants.contextURL + constants.apiURL + "/updateUser", usersRest.authenticateToken, usersRest.updateUser);
 router.delete(constants.contextURL + constants.apiURL + "/deleteUser", usersRest.authenticateToken, usersRest.deleteUser);
@@ -33,6 +33,11 @@ router.post(constants.contextURL + constants.apiURL + "/insertFaunaPuntoConteo",
 router.post(constants.contextURL + constants.apiURL + "/insertFaunaTransecto", usersRest.authenticateToken, formRest.insertFaunaTransecto);
 router.post(constants.contextURL + constants.apiURL + "/insertValidacionCobertura", usersRest.authenticateToken, formRest.insertValidacionCobertura);
 router.post(constants.contextURL + constants.apiURL + "/insertParcelaVegetacion", usersRest.authenticateToken, formRest.insertParcelaVegetacion);
+
+//Admin routes
+router.get(constants.contextURL + constants.apiURL + "/getRegistrosPorUsuario/:idUsuario", usersRest.authenticateTokenAdmin, adminRest.getRegistrosPorUsuario);
+router.get(constants.contextURL + constants.apiURL + "/getRegistros/:idUsuario", usersRest.authenticateTokenAdmin, adminRest.getRegistros);
+
 //Super admin
 router.get(constants.contextURL + constants.apiURL + "/getUsersNA", usersRest.authenticateTokenSAdmin, adminRest.getUsersNoAceptados);
 

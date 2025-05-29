@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        
+        /* ✅ Estilos para filas clickeables */
+        .user-row { cursor: pointer; }
+        .user-row:hover { background-color: #f5f5f5; }
+        
+        /* ✅ Estilos para el menú desplegable */
+        .registros-row {
+            display: none;
+            background-color: #f8f9fa;
+        }
+        
+        .registros-row.show {
+            display: table-row;
+        }
+        
+        .registros-content {
+            padding: 15px;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            background-color: white;
+        }
+        
+        .registros-title {
+            color: #007bff;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .registros-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        
+        .registros-table th,
+        .registros-table td {
+            border: 1px solid #dee2e6;
+            padding: 6px;
+            text-align: left;
+            font-size: 14px;
+        }
+        
+        .registros-table th {
+            background-color: #e9ecef;
+        }
+        
+        .collapse-btn {
+            float: right;
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        
+        .collapse-btn:hover {
+            background: #c82333;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+        }
+    </style>
+    </head>
+    <body>
+        <h1>Gestión de Usuarios</h1>
+        <table>
+            <thead onclick="loadUsuarios()">
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Correo electronico</th>
+                    <th>Role</th>
+                    <th>Estado</th>
+                    <th>Total Registros</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="user-table-body">
+            </tbody>
+        </table>
+        
+        <script>
+            async function loadUsuarios() {
+                try {
+                    const token = localStorage.getItem('token');
+                    if (!token) {
+                        console.error('No token found in localStorage');
+                        return;
+                    }
+
+                    const response = await fetch('/Consultas/api/getusers', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    console.log('Response status:', response.status);
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    console.log('Response data:', data);
+
+                    const users = data.records || [];
+                    console.log('Users:', users);
+
+                    const tbody = document.getElementById('user-table-body');
+                    tbody.innerHTML = '';
+                    
+                    users.forEach(user => {
+                        const userRow = document.createElement('tr');
+                        const userId = user.idUsuario;
+                        userRow.className = 'user-row';
+                        userRow.id = `user-row-${userId}`;
+
+                        userRow.onclick = () => toggleUserRegistros(userId, `${user.Nombre} ${user.Apellidos}`);
+                        userRow.innerHTML = `
+                            <td>${user.idUsuario}</td>
+                            <td>${user.Nombre} ${user.Apellidos}</td>
+                            <td>${user.email}</td>
+                            <td>${user.rol}</td>
+                            <td>${user.estado}</td>
+                            <td>${user.TotalRegistros}</td>
+                            <td onclick="event.stopPropagation()">
+                                <button onclick="editUser(${userId})">Aceptar</button>
+                                <button onclick="deleteUser(${userId})">Rechazar</button>
+                            </td>
+                        `;
+                        tbody.appendChild(userRow);
+
+                        const registrosRow = document.createElement('tr');
+                        registrosRow.className = 'registros-row';
+                        registrosRow.id = `registros-row-${userId}`;
+
+                        registrosRow.innerHTML = `
+                            <td colspan="7">
+                                <div class="registros-content">
+                                    <div class="registros-title">
+                                        Registros de ${user.Nombre} ${user.Apellidos}
+                                        <button class="collapse-btn" onclick="collapseRegistros(${userId})">-</button>
+                                    </div>
+                                    <div id="registros-content-${userId}" class="loading">
+                                        Cargando registros...
+                                    </div>
+                                </div>
+                            </td>
+                        `;
+                        tbody.appendChild(registrosRow);
+                    });
+                } catch (error) {
+                    console.error('Error loading users:', error);
+                }
+            }
+
+            async function toggleUserRegistros(userId, username) {
+                const registrosRow = document.getElementById(`registros-row-${userId}`);
+
+                if(registrosRow.classList.contains('show')) {
+                    registrosRow.classList.remove('show');
+                    return;
+                }
+
+                document.querySelectorAll('.registros-row.show').forEach(row => {
+                    row.classList.remove('show');
+                });
+
+                registrosRow.classList.add('show');
+                const contentDiv = document.getElementById(`registros-content-${userId}`);
+                if(contentDiv.classList.contains('loading')) {
+                    await loadUserRegistros(userId, contentDiv);
+                }
+            }
+
+            async function loadUserRegistros(userId, contentDiv) {
+                try {
+                    const token = localStorage.getItem('token');
+
+                    if (!token) {
+                        console.error('No token found in localStorage');
+                        return;
+                    }
+                    const response = await fetch(`/Consultas/api/getRegistros/${userId}`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if(!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    console.log('Response data:', data);
+
+                    const registros = data.records || [];
+                    contentDiv.classList.remove('loading');
+
+                    if(registros.length === 0) {
+                        contentDiv.innerHTML = `<p>No hay registros para este usuario.</p>`;
+                        return;
+                    }
+
+                    let tableHTML = `
+                        <table class="registros-table">
+                            <thead>
+                                <tr>
+                                    <th>ID Registro</th>
+                                    <th>estado Tiempo</th>
+                                    <th>estacion</th>
+                                    <th>Tipo de registro</th>
+                                    <th>id Creador</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+
+                    registros.forEach(registro => {
+                        tableHTML += `
+                        <tr>
+                            <td>${registro.idFormIn}</td>
+                            <td>${registro.estadoTiempo}</td>
+                            <td>${registro.estacion}</td>
+                            <td>${registro.tipoRegistro}</td>
+                            <td>${registro.idCreador}</td>
+                        </tr>
+                        `;
+                    });
+
+                    tableHTML += `
+                    </tbody>
+                    </table>
+                    <p style="text-align: center; margin-top: 10px;">
+                        Total: ${registros.length} registro(s)
+                    </p>
+                    `;
+
+                    contentDiv.innerHTML = tableHTML;
+                }
+                catch(error){
+                    console.error('Error loading user registros:', error);
+                    contentDiv.classList.remove('loading');
+                    contentDiv.innerHTML = `<p>Error cargando registros: ${error.message}</p>`;
+                }
+            }
+
+            function collapseRegistros(userId) {
+                const registrosRow = document.getElementById(`registros-row-${userId}`);
+                registrosRow.classList.remove('show');
+            }
+
+            function editUser(userId) {
+                console.log(`Edit user with ID: ${userId}`);
+            }
+            
+            function deleteUser(userId) {
+                console.log(`Delete user with ID: ${userId}`);
+            }
+
+            window.addEventListener('DOMContentLoaded', function() {
+                loadUsuarios();
+            });
+
+            loadUsuarios();
+        </script>
+    </body>
+</html>

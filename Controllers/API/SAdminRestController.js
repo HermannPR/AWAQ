@@ -36,13 +36,31 @@ async function getRegistrosPorUsuario(req, res)
 {
     try
     {
-        const fi = req.body;
-        const registros = await SAService.getRegistrosPorUsuario(fi);
-        return res.status(200).json({
-            "status" : "success",
-            "total" : registros.total,
-            "registros" : registros.data
-        });
+        const idUsuario = req.params.idUsuario;
+        if(!idUsuario)
+        {
+            return res.status(400).json({
+                "status" : "error",
+                "message" : "Falta el id del usuario"
+            });
+        }
+
+
+        const registros = await SAService.getRegistrosPorUsuario(idUsuario);
+        if(registros.getStatus()){
+            return res.status(200).json({
+                "status" : "success",
+                "total" : registros.getRows().length,
+                "registros" : registros.getRows()
+            });
+        } 
+        else
+        {
+            return res.status(404).json({
+                "status" : "error",
+                "message" : registros.getErr()
+            });
+        }
     } catch(error)
     {
         let jsonError = {

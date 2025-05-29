@@ -8,8 +8,14 @@ require('dotenv').config();
 async function getUsers(){
     let qResult;
     try{
-        let query = "SELECT * FROM usuario";
-        qResult = await dataSource.getData(query);
+        let query = `SELECT u.idUsuario, u.Nombre, u.Apellidos, u.email, u.rol, u.estado, count(fi.idCreador) as TotalRegistros
+        FROM usuario u left join formularioinicial fi on fi.idCreador = u.idUsuario
+        WHERE u.estado = ?
+        group by u.idUsuario, u.Nombre, u.Apellidos, u.email, u.rol, u.estado
+        order by u.idUsuario
+        `;
+        let params = ['A'];
+        qResult = await dataSource.getDataWithParams(query, params);
     }catch(err){
         qResult = new dataSource.QueryResult(false, [], 0, 0, err.message);
     }
