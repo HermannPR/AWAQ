@@ -3,11 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard - Mawi</title>
-    <meta name="description" content="Dashboard de Mawi" />
+    <title>Dashboard - Mawi</title>    <meta name="description" content="Dashboard de Mawi" />
     <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
+    <link rel="stylesheet" href="css/sidebar-styles.css" />
+  </head><body data-page="dashboard">
     <div class="mawi-app-container">
       <header class="mawi-header">
         <div class="logo">
@@ -21,10 +20,21 @@
               <img src="avatar-placeholder.svg" alt="Usuario" />
             </a>
           </div>
-        </div>
+        </div>      <!-- Botón toggle de la sidebar -->
+      <button class="sidebar-toggle" id="sidebarToggle" aria-label="Abrir/cerrar menú lateral">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9,18 15,12 9,6"></polyline>
+        </svg>
+      </button>
       </header>
 
-      <div class="dashboard-content">
+      <div class="app-content with-sidebar">
+        <!-- Contenedor para la sidebar -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main content -->
+        <main class="main-content">
+          <div class="dashboard-content">
         <div class="services-grid">
           <a href="biomo.html" class="service-card">
             <div class="icon-container">
@@ -60,17 +70,16 @@
               anteproyectos.
             </p>
           </a>
-        </div>
-
-        <div class="support-container">
+        </div>        <div class="support-container">
           <a href="#" class="support-button">
             <img src="support-icon.svg" alt="Soporte" />
             Contacta con el soporte
           </a>
         </div>
+        </main>
       </div>
-    </div>
-    
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+    </div>    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+    <script src="js/sidebar-loader.js"></script>
+    <script src="js/admin-button.js"></script>
   </body>
 </html>

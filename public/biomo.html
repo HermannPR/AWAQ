@@ -1,14 +1,13 @@
-
 <!DOCTYPE html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Asistente de Mi Biomo - Mawi</title>
-    <meta name="description" content="Asistente de Mi Biomo" />
+    <title>Asistente de Mi Biomo - Mawi</title>    <meta name="description" content="Asistente de Mi Biomo" />
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="css/sidebar-styles.css" />
   </head>
-  <body>
+  <body data-page="biomo">
     <div class="mawi-app-container">
       <header class="mawi-header">
         <div class="logo">
@@ -21,24 +20,16 @@
             <img src="avatar-placeholder.svg" alt="Usuario" />
           </div>
         </div>
-      </header>
+      </header>      <!-- Botón toggle de la sidebar -->
+      <button class="sidebar-toggle" id="sidebarToggle" aria-label="Abrir/cerrar menú lateral">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9,18 15,12 9,6"></polyline>
+        </svg>
+      </button>
 
       <div class="app-content with-sidebar">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-          <nav class="sidebar-nav">
-            <a href="dashboard.html" class="sidebar-item">Inicio</a>
-            <a href="biomo.html" class="sidebar-item active">Asistente de Mi Biomo</a>
-            <a href="#" class="sidebar-item">Asistente Explorador de Anteproyectos</a>
-            <a href="#" class="sidebar-item">Asistente de Convocatorias</a>
-          </nav>
-          <div class="sidebar-footer">
-            <a href="#" class="support-link">
-              <img src="support-icon.svg" alt="Soporte" />
-              Contacta con el soporte
-            </a>
-          </div>
-        </aside>
+        <!-- Contenedor para la sidebar -->
+        <div id="sidebar-container"></div>
 
         <!-- Main content -->
         <main class="main-content">
@@ -103,8 +94,125 @@
           </div>
         </main>
       </div>
-    </div>
+    </div>    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+    <script src="js/sidebar-loader.js"></script>
+    <script src="js/admin-button.js"></script>
+    
+    <script>
+    // Chat functionality for Biomo
+    (function() {
+        'use strict';
 
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+        const chatInput = document.querySelector('.chat-input');
+        const sendButton = document.querySelector('.send-button');
+        const chatMessages = document.querySelector('.chat-messages');
+
+        // Configuration
+        const AI_CONFIG = {
+            endpoint: '/Consultas/api/ai-chat', // Corregido para coincidir con el backend
+            systemPrompt: `Eres un asistente especializado en biodiversidad y ecosistemas (Biomo). 
+            Ayudas a los usuarios a entender y analizar su información de biodiversidad. 
+            Responde de manera clara, técnica pero accesible, y siempre enfócate en temas relacionados con:
+            - Biodiversidad
+            - Ecosistemas
+            - Conservación
+            - Análisis de datos ambientales
+            - Proyectos de investigación en biodiversidad`
+        };
+
+        let conversationHistory = [];
+
+        function addMessage(content, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+            
+            const messageP = document.createElement('p');
+            messageP.textContent = content;
+            messageDiv.appendChild(messageP);
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot-message typing-indicator';
+            typingDiv.innerHTML = '<p>Escribiendo...</p>';
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return typingDiv;
+        }
+
+        async function sendMessage(message) {
+            if (!message.trim()) return;
+
+            // Add user message
+            addMessage(message, true);
+            conversationHistory.push({ role: 'user', content: message });
+
+            // Show typing indicator
+            const typingIndicator = showTypingIndicator();
+
+            try {
+                const response = await fetch(AI_CONFIG.endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        messages: conversationHistory,
+                        systemPrompt: AI_CONFIG.systemPrompt
+                    })
+                });
+
+                // Remove typing indicator
+                typingIndicator.remove();
+
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.success && data.response) {
+                    addMessage(data.response, false);
+                    conversationHistory.push({ role: 'assistant', content: data.response });
+                } else {
+                    throw new Error(data.error || 'Error desconocido');
+                }
+
+            } catch (error) {
+                console.error('Error sending message:', error);
+                typingIndicator.remove();
+                addMessage('Lo siento, hubo un error al procesar tu mensaje. Por favor, intenta de nuevo.', false);
+            }
+        }
+
+        function handleSend() {
+            const message = chatInput.value.trim();
+            if (message) {
+                sendMessage(message);
+                chatInput.value = '';
+            }
+        }
+
+        // Event listeners
+        sendButton.addEventListener('click', handleSend);
+        
+        chatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSend();
+            }
+        });
+
+        // Focus on input when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            chatInput.focus();
+        });
+
+        console.log('🌿 Biomo Chat initialized');
+    })();
+    </script>
   </body>
 </html>

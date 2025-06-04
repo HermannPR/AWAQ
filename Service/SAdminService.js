@@ -157,8 +157,8 @@ async function AceptarUsuario(idUsuario)
     let qResult;
     try
     {
-        let query = "UPDATE usuario SET estado = ? WHERE idUsuario = ? OR idResponsable = ?";
-        let params = [1, idUsuario, idUsuario];
+        let query = "UPDATE usuario SET estado = ? WHERE idUsuario = ?";
+        let params = ['A', idUsuario];
         qResult = await dataSource.updateData(query, params);
     }
     catch(err)
@@ -168,4 +168,24 @@ async function AceptarUsuario(idUsuario)
     return qResult;
 }
 
-module.exports = {getRegistros, getRegistrosPorUsuario, updateRegistro, getUsersNoAceptados, AceptarUsuario};
+/**
+ * @returns
+ * @param {*} idUsuario 
+ */
+async function RechazarUsuario(idUsuario)
+{
+    let qResult;
+    try
+    {
+        let query = "UPDATE usuario SET estado = ? WHERE idUsuario = ?";
+        let params = ['I', idUsuario]; // 'I' for Inactive/Rejected
+        qResult = await dataSource.updateData(query, params);
+    }
+    catch(err)
+    {
+        qResult = new dataSource.QueryResult(false, [], 0, 0, err.message);
+    }
+    return qResult;
+}
+
+module.exports = {getRegistros, getRegistrosPorUsuario, updateRegistro, getUsersNoAceptados, AceptarUsuario, RechazarUsuario};

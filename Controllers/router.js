@@ -5,6 +5,7 @@ const imageRest = require('./API/imageRestController');
 const constants = require("../constants");
 const adminRest = require('./API/SAdminRestController');
 const formRest = require('./API/formRestController');
+const aiChatRest = require('./API/aiChatController');
 
 
 const router = express.Router();
@@ -40,5 +41,11 @@ router.get(constants.contextURL + constants.apiURL + "/getRegistros/:idUsuario",
 
 //Super admin
 router.get(constants.contextURL + constants.apiURL + "/getUsersNA", usersRest.authenticateTokenSAdmin, adminRest.getUsersNoAceptados);
+router.post(constants.contextURL + constants.apiURL + "/aceptarUsuario/:idUsuario", usersRest.authenticateTokenSAdmin, adminRest.AceptarUsuario);
+router.post(constants.contextURL + constants.apiURL + "/rechazarUsuario/:idUsuario", usersRest.authenticateTokenSAdmin, adminRest.RechazarUsuario);
+
+// AI Chat routes
+router.post(constants.contextURL + constants.apiURL + "/ai-chat", aiChatRest.aiChat);
+router.get(constants.contextURL + constants.apiURL + "/ai-config", aiChatRest.getAiConfig);
 
 module.exports = router;

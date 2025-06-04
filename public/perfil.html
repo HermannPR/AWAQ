@@ -1,22 +1,14 @@
-
 <!DOCTYPE html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Mi Perfil - Mawi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />    <title>Mi Perfil - Mawi</title>
     <meta name="description" content="Mi Perfil en Mawi" />
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="css/sidebar-styles.css" />
   </head>
-  <body>
-    <div class="mawi-app-container with-sidebar-toggle">
-      <header class="mawi-header">
-        <div class="sidebar-toggle">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M4 6H20M4 12H20M4 18H20" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        
+  <body data-page="perfil">
+    <div class="mawi-app-container">      <header class="mawi-header">
         <div class="logo">
           <img src="eye-icon.svg" alt="Mawi" class="eye-icon" />
           <h2>Mawi</h2>
@@ -28,105 +20,662 @@
             <img src="avatar-placeholder.svg" alt="Usuario" />
           </div>
         </div>
-      </header>
+      </header>      <!-- Botón toggle de la sidebar -->
+      <button class="sidebar-toggle" id="sidebarToggle" aria-label="Abrir/cerrar menú lateral">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9,18 15,12 9,6"></polyline>
+        </svg>
+      </button>
 
-      <!-- Sidebar colapsable -->
-      <aside class="sidebar collapsed" id="sidebar">
-        <nav class="sidebar-nav">
-          <a href="dashboard.html" class="sidebar-item">Inicio</a>
-          <a href="biomo.html" class="sidebar-item">Asistente de Mi Biomo</a>
-          <a href="explorador.html" class="sidebar-item">Asistente Explorador de Anteproyectos</a>
-          <a href="convocatorias.html" class="sidebar-item">Asistente de Convocatorias</a>
-          <a href="perfil.html" class="sidebar-item active">Mi Perfil</a>
-        </nav>
-        <div class="sidebar-footer">
-          <a href="#" class="support-link">
-            <img src="support-icon.svg" alt="Soporte" />
-            Contacta con el soporte
-          </a>
-        </div>
-      </aside>
+      <div class="app-content with-sidebar">
+        <!-- Contenedor para la sidebar -->
+        <div id="sidebar-container"></div>
 
-      <div class="app-content">
-        <main class="main-content full-width">
+        <!-- Main content -->
+        <main class="main-content">
           <div class="biomo-header">
             <h1>Mi Perfil</h1>
+            <p class="biomo-id">Gestiona tu información personal y configuración de cuenta</p>
           </div>
 
           <div class="perfil-form">
-            <div class="form-group">
-              <label for="nombre">Nombre</label>
-              <input 
-                type="text" 
-                id="nombre"
-                class="form-input" 
-                placeholder="Escribe tu nombre"
-              />
+            <!-- Profile Picture Section -->
+            <div class="profile-section">
+              <div class="profile-picture-container">
+                <div class="profile-picture" id="profile-picture">
+                  <img src="avatar-placeholder.svg" alt="Foto de perfil" id="profile-img">
+                  <div class="profile-overlay" onclick="changeProfilePicture()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                      <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke="white" stroke-width="2"/>
+                      <circle cx="12" cy="13" r="4" stroke="white" stroke-width="2"/>
+                    </svg>
+                    <span>Cambiar foto</span>
+                  </div>
+                </div>
+                <input type="file" id="profile-upload" accept="image/*" style="display: none;">
+              </div>
+              
+              <div class="profile-status">
+                <h3>Usuario Activo</h3>
+                <p>Miembro desde: Enero 2024</p>
+                <div class="profile-stats">
+                  <div class="stat">
+                    <span class="stat-number">12</span>
+                    <span class="stat-label">Proyectos</span>
+                  </div>
+                  <div class="stat">
+                    <span class="stat-number">47</span>
+                    <span class="stat-label">Registros</span>
+                  </div>
+                  <div class="stat">
+                    <span class="stat-number">8</span>
+                    <span class="stat-label">Colaboraciones</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div class="form-group">
-              <label for="apellidos">Apellidos</label>
-              <input 
-                type="text" 
-                id="apellidos"
-                class="form-input" 
-                placeholder="Escribe tus apellidos"
-              />
-            </div>
-            
-            <div class="form-group">
-              <label for="contrasena">Contraseña</label>
-              <input 
-                type="password" 
-                id="contrasena"
-                class="form-input" 
-                placeholder="Escribe una contraseña"
-              />
-            </div>
-            
-            <div class="form-group">
-              <label for="org-nombre">Nombre de la organización</label>
-              <input 
-                type="text" 
-                id="org-nombre"
-                class="form-input" 
-                placeholder="Escribe el nombre de tu organización"
-              />
-            </div>
-            
-            <div class="form-group">
-              <label for="org-descripcion">Descripción de la organización</label>
-              <textarea
-                id="org-descripcion"
-                class="form-input" 
-                placeholder="Descripción que hace la organización"
-                rows="4"
-              ></textarea>
-            </div>
+            <form id="profile-form">
+              <!-- Personal Information -->
+              <div class="form-section">
+                <h2 class="section-title">
+                  <span class="section-icon">👤</span>
+                  Información Personal
+                </h2>
+                
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="nombre">Nombre*</label>
+                    <input 
+                      type="text" 
+                      id="nombre"
+                      class="form-input" 
+                      placeholder="Tu nombre"
+                      value="María"
+                      required
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="apellidos">Apellidos*</label>
+                    <input 
+                      type="text" 
+                      id="apellidos"
+                      class="form-input" 
+                      placeholder="Tus apellidos"
+                      value="González Rodríguez"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="email">Correo electrónico*</label>
+                    <input 
+                      type="email" 
+                      id="email"
+                      class="form-input" 
+                      placeholder="tu@email.com"
+                      value="maria.gonzalez@universidad.edu"
+                      required
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="telefono">Teléfono</label>
+                    <input 
+                      type="tel" 
+                      id="telefono"
+                      class="form-input" 
+                      placeholder="+52 81 1234 5678"
+                      value="+52 81 8765 4321"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Security Section -->
+              <div class="form-section">
+                <h2 class="section-title">
+                  <span class="section-icon">🔒</span>
+                  Seguridad
+                </h2>
+                
+                <div class="form-group">
+                  <label for="current-password">Contraseña actual</label>
+                  <input 
+                    type="password" 
+                    id="current-password"
+                    class="form-input" 
+                    placeholder="Contraseña actual"
+                  />
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="new-password">Nueva contraseña</label>
+                    <input 
+                      type="password" 
+                      id="new-password"
+                      class="form-input" 
+                      placeholder="Nueva contraseña"
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="confirm-password">Confirmar contraseña</label>
+                    <input 
+                      type="password" 
+                      id="confirm-password"
+                      class="form-input" 
+                      placeholder="Confirmar nueva contraseña"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Location Information -->
+              <div class="form-section">
+                <h2 class="section-title">
+                  <span class="section-icon">📍</span>
+                  Ubicación
+                </h2>
+                
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="pais">País*</label>
+                    <select id="pais" class="form-input" required>
+                      <option value="MX" selected>México</option>
+                      <option value="CO">Colombia</option>
+                      <option value="CR">Costa Rica</option>
+                      <option value="GT">Guatemala</option>
+                      <option value="PE">Perú</option>
+                      <option value="EC">Ecuador</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="ciudad">Ciudad*</label>
+                    <input 
+                      type="text" 
+                      id="ciudad"
+                      class="form-input" 
+                      placeholder="Tu ciudad"
+                      value="Monterrey"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="region">Región/Estado</label>
+                  <input 
+                    type="text" 
+                    id="region"
+                    class="form-input" 
+                    placeholder="Región o estado"
+                    value="Nuevo León"
+                  />
+                </div>
+              </div>
+
+              <!-- Organization Information -->
+              <div class="form-section">
+                <h2 class="section-title">
+                  <span class="section-icon">🏢</span>
+                  Información Profesional
+                </h2>
+                
+                <div class="form-group">
+                  <label for="org-nombre">Organización*</label>
+                  <input 
+                    type="text" 
+                    id="org-nombre"
+                    class="form-input" 
+                    placeholder="Nombre de tu organización"
+                    value="Universidad Autónoma de Nuevo León"
+                    required
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="cargo">Cargo/Posición</label>
+                  <input 
+                    type="text" 
+                    id="cargo"
+                    class="form-input" 
+                    placeholder="Tu cargo actual"
+                    value="Investigadora Senior - Ecología"
+                  />
+                </div>
+                
+                <div class="form-group">
+                  <label for="org-descripcion">Descripción de la organización</label>
+                  <textarea
+                    id="org-descripcion"
+                    class="form-input" 
+                    placeholder="Describe brevemente tu organización y sus actividades"
+                    rows="4"
+                  >Centro de investigación enfocado en la conservación de biodiversidad y estudios ambientales en México. Realizamos proyectos de monitoreo ecológico, restauración de ecosistemas y educación ambiental comunitaria.</textarea>
+                </div>
+
+                <div class="form-group">
+                  <label for="especialidades">Áreas de especialidad</label>
+                  <input 
+                    type="text" 
+                    id="especialidades"
+                    class="form-input" 
+                    placeholder="Ej: Biodiversidad, Cambio climático, Ecología marina"
+                    value="Biodiversidad, Ecología de bosques, Conservación"
+                  />
+                </div>
+              </div>
+
+              <!-- Notification Preferences -->
+              <div class="form-section">
+                <h2 class="section-title">
+                  <span class="section-icon">🔔</span>
+                  Preferencias de Notificación
+                </h2>
+                
+                <div class="notification-options">
+                  <div class="notification-item">
+                    <input type="checkbox" id="email-notifications" checked>
+                    <label for="email-notifications">Notificaciones por email</label>
+                    <p>Recibir actualizaciones de proyectos y convocatorias</p>
+                  </div>
+                  
+                  <div class="notification-item">
+                    <input type="checkbox" id="project-updates" checked>
+                    <label for="project-updates">Actualizaciones de proyectos</label>
+                    <p>Notificaciones sobre cambios en tus proyectos</p>
+                  </div>
+                  
+                  <div class="notification-item">
+                    <input type="checkbox" id="new-opportunities">
+                    <label for="new-opportunities">Nuevas oportunidades</label>
+                    <p>Alertas sobre nuevas convocatorias relevantes</p>
+                  </div>
+                  
+                  <div class="notification-item">
+                    <input type="checkbox" id="weekly-digest" checked>
+                    <label for="weekly-digest">Resumen semanal</label>
+                    <p>Digest semanal de actividades y oportunidades</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="action-buttons">
+                <button type="submit" class="action-button primary">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M20 6L9 17l-5-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Guardar Cambios
+                </button>
+                
+                <button type="button" class="action-button" onclick="resetForm()">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M3 12a9 9 0 019-9 9.75 9.75 0 016.74 2.74L21 8" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M21 3v5h-5M21 12a9 9 0 01-9 9 9.75 9.75 0 01-6.74-2.74L3 16" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M8 16l-5 5v-5h5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Restablecer
+                </button>
+                
+                <button type="button" class="action-button danger" onclick="deleteAccount()">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <polyline points="3,6 5,6 21,6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Eliminar Cuenta
+                </button>
+              </div>
+            </form>
 
             <div class="support-container">
               <a href="#" class="support-button">
                 <img src="support-icon.svg" alt="Soporte" />
-                Contacta con el soporte
+                ¿Necesitas ayuda con tu perfil?
               </a>
             </div>
-          </div>
-        </main>
+          </div>        </main>
       </div>
-    </div>
-
+    </div>    <script src="js/sidebar-loader.js"></script>
+    <script src="js/admin-button.js"></script>
     <script>
-      // Script simple para controlar la visualización del sidebar
-      document.addEventListener('DOMContentLoaded', function() {
-        const sidebarToggle = document.querySelector('.sidebar-toggle');
-        const sidebar = document.getElementById('sidebar');
+      function changeProfilePicture() {
+        document.getElementById('profile-upload').click();
+      }
+
+      function handleProfileUpload(event) {
+        const file = event.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            const profileImg = document.getElementById('profile-img');
+            profileImg.src = e.target.result;
+            showNotification('📸 Foto de perfil actualizada', 'success');
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+
+      function saveProfile(event) {
+        event.preventDefault();
         
-        sidebarToggle.addEventListener('click', function() {
-          sidebar.classList.toggle('collapsed');
-        });
+        // Validate passwords if they're being changed
+        const currentPassword = document.getElementById('current-password').value;
+        const newPassword = document.getElementById('new-password').value;
+        const confirmPassword = document.getElementById('confirm-password').value;
+        
+        if (newPassword || confirmPassword) {
+          if (!currentPassword) {
+            showNotification('⚠️ Ingresa tu contraseña actual para cambiarla', 'error');
+            return;
+          }
+          
+          if (newPassword !== confirmPassword) {
+            showNotification('⚠️ Las contraseñas nuevas no coinciden', 'error');
+            return;
+          }
+          
+          if (newPassword.length < 6) {
+            showNotification('⚠️ La nueva contraseña debe tener al menos 6 caracteres', 'error');
+            return;
+          }
+        }
+        
+        // Simulate saving
+        const submitBtn = event.target.querySelector('.action-button.primary');
+        submitBtn.classList.add('loading');
+        submitBtn.innerHTML = 'Guardando...';
+        
+        setTimeout(() => {
+          showNotification('✅ Perfil actualizado exitosamente', 'success');
+          
+          // Clear password fields
+          document.getElementById('current-password').value = '';
+          document.getElementById('new-password').value = '';
+          document.getElementById('confirm-password').value = '';
+          
+          // Reset button
+          submitBtn.classList.remove('loading');
+          submitBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Guardar Cambios';
+        }, 1500);
+      }
+
+      function resetForm() {
+        if (confirm('¿Estás seguro de que quieres restablecer todos los cambios?')) {
+          document.getElementById('profile-form').reset();
+          showNotification('🔄 Formulario restablecido', 'info');
+        }
+      }
+
+      function deleteAccount() {
+        const confirmed = confirm('⚠️ ADVERTENCIA: Esta acción eliminará permanentemente tu cuenta y todos tus datos. ¿Estás absolutamente seguro?');
+        
+        if (confirmed) {
+          const doubleConfirm = prompt('Para confirmar, escribe "ELIMINAR" en mayúsculas:');
+          
+          if (doubleConfirm === 'ELIMINAR') {
+            showNotification('🗑️ Procesando eliminación de cuenta...', 'error');
+            
+            setTimeout(() => {
+              alert('Tu cuenta ha sido marcada para eliminación. Recibirás un email de confirmación final.');
+            }, 2000);
+          } else {
+            showNotification('❌ Eliminación cancelada', 'info');
+          }
+        }
+      }
+
+      function showNotification(message, type) {
+        // Remove existing notifications
+        const existingNotifications = document.querySelectorAll('.notification');
+        existingNotifications.forEach(n => n.remove());
+        
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.innerHTML = message;
+        notification.style.cssText = `
+          position: fixed;
+          top: 80px;
+          right: 20px;
+          padding: 16px 24px;
+          border-radius: 8px;
+          color: white;
+          font-weight: 500;
+          z-index: 1000;
+          transform: translateX(100%);
+          transition: transform 0.3s ease;
+          max-width: 400px;
+          word-wrap: break-word;
+        `;
+        
+        // Set colors based on type
+        const colors = {
+          success: '#30a046',
+          error: '#ff4444',
+          info: '#007bff'
+        };
+        notification.style.backgroundColor = colors[type] || colors.info;
+        
+        document.body.appendChild(notification);
+        
+        // Animate in
+        setTimeout(() => {
+          notification.style.transform = 'translateX(0)';
+        }, 100);
+        
+        // Remove after 4 seconds
+        setTimeout(() => {
+          notification.style.transform = 'translateX(100%)';
+          setTimeout(() => {
+            if (notification.parentNode) {
+              notification.parentNode.removeChild(notification);
+            }
+          }, 300);
+        }, 4000);
+      }
+
+      // Initialize
+      document.addEventListener('DOMContentLoaded', function() {
+        // Add event listeners
+        document.getElementById('profile-upload').addEventListener('change', handleProfileUpload);
+        document.getElementById('profile-form').addEventListener('submit', saveProfile);
       });
     </script>
 
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+    <style>
+      /* Additional styles for profile page */
+      .profile-section {
+        display: flex;
+        gap: 32px;
+        margin-bottom: 32px;
+        padding: 24px;
+        background-color: #333;
+        border-radius: 12px;
+        align-items: center;
+      }
+
+      .profile-picture-container {
+        flex-shrink: 0;
+      }
+
+      .profile-picture {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+        border: 4px solid #30a046;
+      }
+
+      .profile-picture img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .profile-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        color: white;
+        font-size: 0.8rem;
+        gap: 4px;
+      }
+
+      .profile-picture:hover .profile-overlay {
+        opacity: 1;
+      }
+
+      .profile-status h3 {
+        margin: 0 0 8px 0;
+        color: #30a046;
+      }
+
+      .profile-status p {
+        margin: 0 0 16px 0;
+        color: #aaa;
+      }
+
+      .profile-stats {
+        display: flex;
+        gap: 24px;
+      }
+
+      .stat {
+        text-align: center;
+      }
+
+      .stat-number {
+        display: block;
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #30a046;
+      }
+
+      .stat-label {
+        display: block;
+        font-size: 0.8rem;
+        color: #aaa;
+      }
+
+      .form-section {
+        margin-bottom: 32px;
+        padding: 24px;
+        background-color: #333;
+        border-radius: 12px;
+      }
+
+      .section-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 0 0 24px 0;
+        color: #e0e0e0;
+        font-size: 1.2rem;
+        border-bottom: 2px solid #444;
+        padding-bottom: 12px;
+      }
+
+      .section-icon {
+        font-size: 1.4rem;
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 0;
+      }
+
+      .form-row .form-group {
+        margin-bottom: 20px;
+      }
+
+      .notification-options {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .notification-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 16px;
+        background-color: #444;
+        border-radius: 8px;
+      }
+
+      .notification-item input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        margin-top: 2px;
+        accent-color: #30a046;
+      }
+
+      .notification-item label {
+        font-weight: 600;
+        color: #e0e0e0;
+        margin-bottom: 4px;
+        cursor: pointer;
+      }
+
+      .notification-item p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #aaa;
+        line-height: 1.4;
+      }
+
+      .action-button.danger {
+        background-color: #dc3545;
+      }
+
+      .action-button.danger:hover {
+        background-color: #c82333;
+      }
+
+      @media (max-width: 768px) {
+        .profile-section {
+          flex-direction: column;
+          text-align: center;
+        }
+        
+        .profile-stats {
+          justify-content: center;
+        }
+        
+        .form-row {
+          grid-template-columns: 1fr;
+          gap: 0;
+        }
+        
+        .action-buttons {
+          flex-direction: column;
+        }
+        
+        .action-button {
+          width: 100%;
+          justify-content: center;
+        }
+      }
+    </style>
   </body>
 </html>
+

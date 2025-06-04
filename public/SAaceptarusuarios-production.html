@@ -26,14 +26,13 @@
                     <span>🚪</span> Cerrar Sesión
                 </button>
             </div>
-        </header>        <!-- Navigation -->
+        </header>
+
+        <!-- Navigation -->
         <nav class="admin-nav">
             <ul>
                 <li><a href="indexSAdmin.html">
                     <span>📊</span> Dashboard
-                </a></li>
-                <li><a href="dashboard.html">
-                    <span>🏠</span> Dashboard MAWI
                 </a></li>
                 <li><a href="SAaceptarusuarios.html" class="active">
                     <span>👥</span> Usuarios Pendientes
@@ -288,7 +287,9 @@
                 console.error('❌ Error approving user:', error);
                 alert('Error al aprobar usuario. Inténtalo de nuevo.');
             }
-        }        // Función para rechazar usuario
+        }
+
+        // Función para rechazar usuario
         async function rejectUser(userId) {
             console.log(`👎 Rechazando usuario ${userId}`);
             
@@ -297,44 +298,30 @@
             }
 
             try {
-                const response = await fetch(`/Consultas/api/rechazarUsuario/${userId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${userToken}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                console.log('📡 Respuesta de rechazo:', response.status);
-
-                if (response.ok) {
-                    // Remover usuario de la tabla
-                    const userRow = document.getElementById(`user-${userId}`);
-                    if (userRow) {
-                        userRow.style.background = 'rgba(239, 68, 68, 0.1)';
-                        setTimeout(() => {
-                            userRow.remove();
-                            // Actualizar contador
-                            const remaining = document.querySelectorAll('#usersTableBody tr[id^="user-"]').length;
-                            const countElement = document.getElementById('pendingCount');
-                            if (countElement) {
-                                countElement.textContent = remaining;
-                            }
-                            
-                            if (remaining === 0) {
-                                const emptyState = document.getElementById('emptyState');
-                                const approveAllBtn = document.getElementById('approveAllBtn');
-                                if (emptyState) emptyState.style.display = 'block';
-                                if (approveAllBtn) approveAllBtn.style.display = 'none';
-                            }
-                        }, 500);
-                    }
-                    
-                    console.log(`✅ Usuario ${userId} rechazado exitosamente`);
-                    alert('Usuario rechazado exitosamente');
-                } else {
-                    throw new Error('Error en la respuesta del servidor');
+                // Por ahora solo removemos de la vista ya que no hay endpoint de rechazo
+                const userRow = document.getElementById(`user-${userId}`);
+                if (userRow) {
+                    userRow.style.background = 'rgba(239, 68, 68, 0.1)';
+                    setTimeout(() => {
+                        userRow.remove();
+                        // Actualizar contador
+                        const remaining = document.querySelectorAll('#usersTableBody tr[id^="user-"]').length;
+                        const countElement = document.getElementById('pendingCount');
+                        if (countElement) {
+                            countElement.textContent = remaining;
+                        }
+                        
+                        if (remaining === 0) {
+                            const emptyState = document.getElementById('emptyState');
+                            const approveAllBtn = document.getElementById('approveAllBtn');
+                            if (emptyState) emptyState.style.display = 'block';
+                            if (approveAllBtn) approveAllBtn.style.display = 'none';
+                        }
+                    }, 500);
                 }
+                
+                console.log(`ℹ️ Usuario ${userId} marcado para rechazo`);
+                alert('Usuario rechazado de la vista. Funcionalidad de rechazo pendiente en el backend.');
             } catch (error) {
                 console.error('❌ Error rejecting user:', error);
                 alert('Error al rechazar usuario. Inténtalo de nuevo.');

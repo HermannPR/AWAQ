@@ -151,4 +151,31 @@ async function AceptarUsuario(req, res)
     }
 }
 
-module.exports = {getRegistros, getRegistrosPorUsuario, updateRegistro, getUsersNoAceptados, AceptarUsuario};
+/**
+ * @param {*} req
+ * @param {*} res
+ */
+async function RechazarUsuario(req, res)
+{
+    try
+    {
+        const idUsuario = req.params.idUsuario;
+        const result = await SAService.RechazarUsuario(idUsuario);
+        return res.status(200).json({
+            "status" : "success",
+            "total" : result.changes,
+            "records" : result.data
+        });
+    }
+    catch(error)
+    {
+        let jsonError = {
+            "status" : "error",
+            "message" : error.message
+        }
+        console.log(error);
+        return res.status(500).json(jsonError);
+    }
+}
+
+module.exports = {getRegistros, getRegistrosPorUsuario, updateRegistro, getUsersNoAceptados, AceptarUsuario, RechazarUsuario};

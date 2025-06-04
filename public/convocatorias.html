@@ -3,19 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Asistente de Convocatorias - Mawi</title>
-    <meta name="description" content="Asistente de Convocatorias" />
+    <title>Asistente de Convocatorias - Mawi</title>    <meta name="description" content="Asistente de Convocatorias" />
     <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <div class="mawi-app-container with-sidebar-toggle">
-      <header class="mawi-header">
-        <div class="sidebar-toggle">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M4 6H20M4 12H20M4 18H20" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        
+    <link rel="stylesheet" href="css/sidebar-styles.css" />
+  </head>  <body data-page="convocatorias">
+    <div class="mawi-app-container">
+      <header class="mawi-header">        
         <div class="logo">
           <img src="eye-icon.svg" alt="Mawi" class="eye-icon" />
           <h2>Mawi</h2>
@@ -27,26 +20,19 @@
             <img src="avatar-placeholder.svg" alt="Usuario" />
           </div>
         </div>
-      </header>
+      </header>      <!-- Botón toggle de la sidebar -->
+      <button class="sidebar-toggle" id="sidebarToggle" aria-label="Abrir/cerrar menú lateral">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9,18 15,12 9,6"></polyline>
+        </svg>
+      </button>
 
-      <!-- Sidebar colapsable -->
-      <aside class="sidebar collapsed" id="sidebar">
-        <nav class="sidebar-nav">
-          <a href="dashboard.html" class="sidebar-item">Inicio</a>
-          <a href="biomo.html" class="sidebar-item">Asistente de Mi Biomo</a>
-          <a href="explorador.html" class="sidebar-item">Asistente Explorador de Anteproyectos</a>
-          <a href="convocatorias.html" class="sidebar-item active">Asistente de Convocatorias</a>
-        </nav>
-        <div class="sidebar-footer">
-          <a href="#" class="support-link">
-            <img src="support-icon.svg" alt="Soporte" />
-            Contacta con el soporte
-          </a>
-        </div>
-      </aside>
+      <div class="app-content with-sidebar">
+        <!-- Contenedor para la sidebar -->
+        <div id="sidebar-container"></div>
 
-      <div class="app-content">
-        <main class="main-content full-width">
+        <!-- Main content -->
+        <main class="main-content">
           <div class="biomo-header">
             <h1>Asistente de Convocatorias</h1>
           </div>
@@ -136,26 +122,14 @@
                 </svg>
                 Subir Datos
               </button>
-            </div>
-            
-            <p class="helper-text">En base a esta información te puedo ayudar a desarrollar tu proyecto.</p>
+            </div>              <p class="helper-text">En base a esta información te puedo ayudar a desarrollar tu proyecto.</p>
           </div>
         </main>
       </div>
     </div>
 
-    <script>
-      // Script simple para controlar la visualización del sidebar
-      document.addEventListener('DOMContentLoaded', function() {
-        const sidebarToggle = document.querySelector('.sidebar-toggle');
-        const sidebar = document.getElementById('sidebar');
-        
-        sidebarToggle.addEventListener('click', function() {
-          sidebar.classList.toggle('collapsed');
-        });
-      });
-    </script>
-
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+    <script src="js/sidebar-loader.js"></script>
+    <script src="js/admin-button.js"></script>
   </body>
 </html>
