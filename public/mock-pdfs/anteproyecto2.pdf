@@ -1,0 +1,50 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << >> >>
+endobj
+4 0 obj
+<< /Length 180 >>
+stream
+BT
+/F1 20 Tf
+100 700 Td
+(Programmer's Easter Egg) Tj
+100 670 Td
+(  // Save the Trees! ) Tj
+100 650 Td
+(  for(int i=0;i<trees;i++) { ) Tj
+100 630 Td
+(      plantTree(); ) Tj
+100 610 Td
+(  } ) Tj
+100 590 Td
+(  /* ) Tj
+100 570 Td
+(   (\_/)  ) Tj
+100 550 Td
+(   ( •_•) ) Tj
+100 530 Td
+(   / >🌱  ) Tj
+100 510 Td
+(  */ ) Tj
+ET
+endstream
+endobj
+xref
+0 5
+0000000000 65535 f 
+0000000010 00000 n 
+0000000061 00000 n 
+0000000112 00000 n 
+0000000221 00000 n 
+trailer
+<< /Root 1 0 R /Size 5 >>
+startxref
+410
+%%EOF

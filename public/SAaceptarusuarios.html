@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">    <title>Usuarios Pendientes - MAWI Super Admin</title>
+    <link rel="stylesheet" href="css/admin-dashboard-stats.css">
+    <link rel="stylesheet" href="css/sidebar-styles.css">
+    <link rel="stylesheet" href="css/sidebar-enhanced.css">
+    <link rel="stylesheet" href="css/notification.css">
+    <link rel="stylesheet" href="css/loading.css">
+    <style>
+        /* Estilos adicionales para mejorar la presentación */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--admin-primary, #3b82f6);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            color: var(--admin-text-primary, #1f2937);
+        }
+        
+        .user-id {
+            font-size: 0.875rem;
+            color: var(--admin-text-secondary, #6b7280);
+        }
+        
+        .role-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .role-investigador { background: #dbeafe; color: #1d4ed8; }
+        .role-estudiante { background: #dcfce7; color: #16a34a; }
+        .role-coordinador { background: #fef3c7; color: #d97706; }
+        .role-usuario { background: #f3f4f6; color: #374151; }
+        .role-biomonitor { background: #e0e7ff; color: #4338ca; }
+        .role-administrador { background: #fce7f3; color: #be185d; }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .status-pending { background: #fef3c7; color: #d97706; }
+        .status-active { background: #dcfce7; color: #16a34a; }
+        .status-inactive { background: #fee2e2; color: #dc2626; }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+          .notification-success { 
+            background: #10b981; 
+            color: white !important;
+        }
+        .notification-error { 
+            background: #ef4444; 
+            color: white !important;
+        }
+        .notification-warning { 
+            background: #f59e0b; 
+            color: white !important;
+        }
+        .notification-info { 
+            background: #3b82f6; 
+            color: white !important;
+        }
+    </style>
+</head>
+<body data-page="usuarios-pendientes">
+    <div class="admin-app-container">
+        <!-- Header -->
+        <header class="admin-header">
+            <div class="admin-logo">
+                <div class="admin-logo-icon">M</div>
+                <h1>MAWI Super Admin</h1>
+            </div>
+            <div class="admin-user-menu">
+                <div class="admin-user-info">
+                    <div class="admin-avatar" id="userAvatar">SA</div>
+                    <div>
+                        <div class="admin-username" id="userName">Super Admin</div>
+                        <div class="admin-user-role" id="userRole">Sistema</div>
+                    </div>
+                </div>
+                <button class="admin-btn admin-btn-secondary" onclick="logout()">
+                    <span>🚪</span> Cerrar Sesión
+                </button>
+            </div>
+        </header>
+
+        <!-- Sidebar Toggle -->
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Abrir/cerrar menú lateral">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9,18 15,12 9,6"></polyline>
+            </svg>
+        </button>
+
+        <div class="admin-content-wrapper">
+            <!-- Sidebar Container -->
+            <div id="sidebar-container"></div>
+
+            <!-- Main Content -->
+            <main class="admin-main-content">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">👥 Usuarios Pendientes</h1>
+                        <p class="page-subtitle">Revisa y aprueba nuevos usuarios registrados en el sistema</p>
+                    </div>
+                    <div class="page-actions">
+                        <button class="admin-btn admin-btn-outline" onclick="loadPendingUsers()">
+                            🔄 Actualizar
+                        </button>
+                        <button class="admin-btn admin-btn-primary" onclick="approveAllUsers()" id="headerApproveAllBtn" style="display: none;">
+                            ✅ Aprobar Todos
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats Overview -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">⏳</div>
+                        <div class="stat-content">
+                            <h3 class="stat-title">Usuarios Pendientes</h3>
+                            <p class="stat-value" id="pendingUsersCount">0</p>
+                            <p class="stat-change">Esperando aprobación</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-content">
+                            <h3 class="stat-title">Aprobados Hoy</h3>
+                            <p class="stat-value" id="approvedTodayCount">0</p>
+                            <p class="stat-change">En las últimas 24h</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">🕒</div>
+                        <div class="stat-content">
+                            <h3 class="stat-title">Tiempo Promedio</h3>
+                            <p class="stat-value" id="avgProcessingTime">2h</p>
+                            <p class="stat-change">De procesamiento</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions Bar -->
+                <div class="admin-actions-bar">
+                    <div class="admin-actions-left">
+                        <button class="admin-btn admin-btn-primary" onclick="loadPendingUsers()">
+                            🔄 Actualizar Lista
+                        </button>
+                        <button class="admin-btn admin-btn-success" onclick="approveAllVisible()" id="approveAllBtn" style="display: none;">
+                            ✅ Aprobar Todos Visibles
+                        </button>
+                    </div>
+                    <div class="admin-badge admin-badge-info">
+                        <span id="pendingCount">0</span> usuarios pendientes
+                    </div>
+                </div>
+
+                <!-- Users Table -->
+                <div class="admin-table-container">
+                    <table class="admin-table" id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Email</th>
+                                <th>Rol</th>
+                                <th>Fecha Registro</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <tr>
+                                <td colspan="6" class="admin-loading">
+                                    <div class="loading-spinner"></div>
+                                    Cargando usuarios pendientes...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyState" class="admin-card" style="display: none; text-align: center; padding: 3rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🎉</div>
+                    <h3 style="margin: 0 0 0.5rem 0; color: var(--admin-text-primary);">¡Excelente trabajo!</h3>
+                    <p style="color: var(--admin-text-secondary); margin: 0;">No hay usuarios pendientes de aprobación</p>
+                </div>
+            </main>
+        </div>
+    </div>    <!-- Scripts -->
+    <script src="js/notification.js"></script>
+    <script src="js/loading.js"></script>
+    <script src="js/sidebar-enhanced.js"></script>
+    <script>
+        console.log('🚀 Iniciando página de usuarios pendientes');
+        
+        // Variables globales
+        let userToken = localStorage.getItem('token');
+        let pendingUsers = [];
+        let isProduction = false; // Cambiar a true en producción
+
+        // Función para verificar autenticación
+        function checkAuth() {
+            if (!userToken && isProduction) {
+                console.log('❌ No hay token, redirigiendo a login');
+                window.location.href = 'login.html';
+                return false;
+            }
+            return true;
+        }
+
+        // Función principal para cargar usuarios pendientes
+        async function loadPendingUsers() {
+            console.log('📋 Cargando usuarios pendientes...');
+            
+            if (!checkAuth()) return;
+
+            try {
+                const tbody = document.getElementById('usersTableBody');
+                const emptyState = document.getElementById('emptyState');
+                const approveAllBtn = document.getElementById('approveAllBtn');
+                const headerApproveAllBtn = document.getElementById('headerApproveAllBtn');
+                
+                if (!tbody) {
+                    console.error('❌ No se encontró elemento usersTableBody');
+                    return;
+                }
+                
+                // Mostrar loading
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="admin-loading">
+                            <div class="loading-spinner"></div>
+                            Cargando usuarios pendientes...
+                        </td>
+                    </tr>
+                `;
+
+                // Intentar cargar desde API
+                let apiEndpoint = isProduction ? '/Consultas/api/getUsersNA' : '/Consultas/api/listpendientes';
+                
+                const response = await fetch(apiEndpoint, {
+                    headers: {
+                        'Authorization': `Bearer ${userToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('📊 Datos recibidos:', data);
+                    
+                    // Manejar diferentes formatos de respuesta
+                    pendingUsers = data.records || data || [];
+                    
+                    if (Array.isArray(pendingUsers) && pendingUsers.length > 0) {
+                        displayUsers(pendingUsers);
+                        updateStats(pendingUsers.length);
+                        if (approveAllBtn) approveAllBtn.style.display = 'inline-flex';
+                        if (headerApproveAllBtn) headerApproveAllBtn.style.display = 'inline-flex';
+                        if (emptyState) emptyState.style.display = 'none';
+                    } else {
+                        showEmptyState();
+                    }
+                } else {
+                    console.log('API no disponible, cargando datos demo');
+                    loadDemoUsers();
+                }
+
+            } catch (error) {
+                console.error('❌ Error loading pending users:', error);
+                loadDemoUsers();
+            }
+        }
+
+        // Función para cargar datos demo
+        function loadDemoUsers() {
+            console.log('🎭 Cargando datos demo');
+            
+            pendingUsers = [
+                {
+                    id: 1,
+                    idUsuario: 1,
+                    Nombre: 'María',
+                    Apellidos: 'García López',
+                    nombre: 'María García',
+                    email: 'maria.garcia@email.com',
+                    rol: 'Investigador',
+                    fechaRegistro: '2024-03-15',
+                    estado: 'pendiente'
+                },
+                {
+                    id: 2,
+                    idUsuario: 2,
+                    Nombre: 'Carlos',
+                    Apellidos: 'López Martínez',
+                    nombre: 'Carlos López',
+                    email: 'carlos.lopez@universidad.edu',
+                    rol: 'Estudiante',
+                    fechaRegistro: '2024-03-14',
+                    estado: 'pendiente'
+                },
+                {
+                    id: 3,
+                    idUsuario: 3,
+                    Nombre: 'Ana',
+                    Apellidos: 'Rodríguez Sánchez',
+                    nombre: 'Ana Rodríguez',
+                    email: 'ana.rodriguez@instituto.org',
+                    rol: 'Coordinador',
+                    fechaRegistro: '2024-03-13',
+                    estado: 'pendiente'
+                }
+            ];
+            
+            displayUsers(pendingUsers);
+            updateStats(pendingUsers.length);
+            
+            const approveAllBtn = document.getElementById('approveAllBtn');
+            const headerApproveAllBtn = document.getElementById('headerApproveAllBtn');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (approveAllBtn) approveAllBtn.style.display = 'inline-flex';
+            if (headerApproveAllBtn) headerApproveAllBtn.style.display = 'inline-flex';
+            if (emptyState) emptyState.style.display = 'none';
+        }
+
+        // Función para mostrar usuarios en la tabla
+        function displayUsers(users) {
+            const tbody = document.getElementById('usersTableBody');
+            if (!tbody) return;
+
+            if (users.length === 0) {
+                showEmptyState();
+                return;
+            }
+
+            tbody.innerHTML = users.map(user => {
+                const userId = user.idUsuario || user.id;
+                const fullName = user.Nombre && user.Apellidos ? 
+                    `${user.Nombre} ${user.Apellidos}` : 
+                    (user.nombre || user.Nombre || 'Sin nombre');
+                const userEmail = user.email || 'Sin email';
+                const userRole = user.rol || 'Sin rol';
+                const registrationDate = user.fechaRegistro || new Date().toISOString();
+                const userStatus = user.estado || 'pendiente';
+                
+                return `
+                    <tr id="user-${userId}">
+                        <td>
+                            <div class="user-info">
+                                <div class="user-avatar">${fullName.charAt(0).toUpperCase()}</div>
+                                <div>
+                                    <div class="user-name">${fullName}</div>
+                                    <div class="user-id">ID: ${userId}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${userEmail}</td>
+                        <td>
+                            <span class="role-badge role-${userRole.toLowerCase().replace(' ', '-')}">${getRoleText(userRole)}</span>
+                        </td>
+                        <td>${formatDate(registrationDate)}</td>
+                        <td>
+                            <span class="status-badge status-${getStatusClass(userStatus)}">${getStatusText(userStatus)}</span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="admin-btn admin-btn-success admin-btn-sm" onclick="approveUser('${userId}')">
+                                    ✅ Aprobar
+                                </button>
+                                <button class="admin-btn admin-btn-danger admin-btn-sm" onclick="rejectUser('${userId}')">
+                                    ❌ Rechazar
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Función para mostrar estado vacío
+        function showEmptyState() {
+            const tbody = document.getElementById('usersTableBody');
+            const emptyState = document.getElementById('emptyState');
+            const approveAllBtn = document.getElementById('approveAllBtn');
+            const headerApproveAllBtn = document.getElementById('headerApproveAllBtn');
+            
+            if (tbody) tbody.innerHTML = '';
+            if (emptyState) emptyState.style.display = 'block';
+            if (approveAllBtn) approveAllBtn.style.display = 'none';
+            if (headerApproveAllBtn) headerApproveAllBtn.style.display = 'none';
+            
+            updateStats(0);
+        }
+
+        // Función para actualizar estadísticas
+        function updateStats(pendingCount) {
+            const pendingCountEl = document.getElementById('pendingCount');
+            const pendingUsersCountEl = document.getElementById('pendingUsersCount');
+            
+            if (pendingCountEl) pendingCountEl.textContent = pendingCount;
+            if (pendingUsersCountEl) pendingUsersCountEl.textContent = pendingCount;
+        }
+
+        // Función para formatear fecha
+        function formatDate(dateString) {
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('es-ES', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+            } catch (error) {
+                return 'Fecha inválida';
+            }
+        }
+
+        // Función para aprobar usuario
+        async function approveUser(userId) {
+            console.log(`👍 Aprobando usuario ${userId}`);
+            
+            if (!confirm('¿Estás seguro de que quieres aprobar este usuario?')) {
+                return;
+            }
+
+            try {
+                const userRow = document.getElementById(`user-${userId}`);
+                if (userRow) {
+                    // Deshabilitar botones mientras se procesa
+                    const buttons = userRow.querySelectorAll('button');
+                    buttons.forEach(btn => btn.disabled = true);
+                }
+
+                const response = await fetch(`/Consultas/api/aceptarUsuario/${userId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${userToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log('📡 Respuesta de aprobación:', response.status);
+
+                if (response.ok || !isProduction) {
+                    // Animar la remoción del usuario
+                    if (userRow) {
+                        userRow.style.background = 'rgba(16, 185, 129, 0.1)';
+                        userRow.style.transition = 'all 0.5s ease';
+                        
+                        setTimeout(() => {
+                            userRow.remove();
+                            
+                            // Actualizar contador
+                            const remaining = document.querySelectorAll('#usersTableBody tr[id^="user-"]').length;
+                            updateStats(remaining);
+                            
+                            if (remaining === 0) {
+                                showEmptyState();
+                            }
+                        }, 500);
+                    }
+                    
+                    // Actualizar array de usuarios pendientes
+                    pendingUsers = pendingUsers.filter(user => (user.idUsuario || user.id) != userId);
+                    
+                    console.log(`✅ Usuario ${userId} aprobado exitosamente`);
+                    showNotification('Usuario aprobado exitosamente', 'success');
+                } else {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('❌ Error approving user:', error);
+                showNotification('Error al aprobar usuario. Inténtalo de nuevo.', 'error');
+                
+                // Rehabilitar botones en caso de error
+                const userRow = document.getElementById(`user-${userId}`);
+                if (userRow) {
+                    const buttons = userRow.querySelectorAll('button');
+                    buttons.forEach(btn => btn.disabled = false);
+                }
+            }
+        }
+
+        // Función para rechazar usuario
+        async function rejectUser(userId) {
+            console.log(`👎 Rechazando usuario ${userId}`);
+            
+            if (!confirm('¿Estás seguro de que quieres rechazar este usuario?')) {
+                return;
+            }
+
+            try {
+                const userRow = document.getElementById(`user-${userId}`);
+                if (userRow) {
+                    // Deshabilitar botones mientras se procesa
+                    const buttons = userRow.querySelectorAll('button');
+                    buttons.forEach(btn => btn.disabled = true);
+                }
+
+                const response = await fetch(`/Consultas/api/rechazarUsuario/${userId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${userToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log('📡 Respuesta de rechazo:', response.status);
+
+                if (response.ok || !isProduction) {
+                    // Animar la remoción del usuario
+                    if (userRow) {
+                        userRow.style.background = 'rgba(239, 68, 68, 0.1)';
+                        userRow.style.transition = 'all 0.5s ease';
+                        
+                        setTimeout(() => {
+                            userRow.remove();
+                            
+                            // Actualizar contador
+                            const remaining = document.querySelectorAll('#usersTableBody tr[id^="user-"]').length;
+                            updateStats(remaining);
+                            
+                            if (remaining === 0) {
+                                showEmptyState();
+                            }
+                        }, 500);
+                    }
+                    
+                    // Actualizar array de usuarios pendientes
+                    pendingUsers = pendingUsers.filter(user => (user.idUsuario || user.id) != userId);
+                    
+                    console.log(`✅ Usuario ${userId} rechazado exitosamente`);
+                    showNotification('Usuario rechazado', 'warning');
+                } else {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('❌ Error rejecting user:', error);
+                showNotification('Error al rechazar usuario. Inténtalo de nuevo.', 'error');
+                
+                // Rehabilitar botones en caso de error
+                const userRow = document.getElementById(`user-${userId}`);
+                if (userRow) {
+                    const buttons = userRow.querySelectorAll('button');
+                    buttons.forEach(btn => btn.disabled = false);
+                }
+            }
+        }
+
+        // Función para aprobar todos los usuarios visibles
+        async function approveAllVisible() {
+            if (!confirm('¿Estás seguro de que quieres aprobar TODOS los usuarios pendientes?')) {
+                return;
+            }
+
+            const userRows = document.querySelectorAll('#usersTableBody tr[id^="user-"]');
+            
+            if (userRows.length === 0) {
+                showNotification('No hay usuarios pendientes para aprobar', 'info');
+                return;
+            }
+
+            console.log(`📦 Aprobando ${userRows.length} usuarios en lote`);
+
+            const approveAllBtn = document.getElementById('approveAllBtn');
+            const headerApproveAllBtn = document.getElementById('headerApproveAllBtn');
+            const originalText = approveAllBtn ? approveAllBtn.innerHTML : '';
+            const originalHeaderText = headerApproveAllBtn ? headerApproveAllBtn.innerHTML : '';
+
+            // Deshabilitar botones
+            if (approveAllBtn) {
+                approveAllBtn.disabled = true;
+                approveAllBtn.innerHTML = '⏳ Aprobando todos...';
+            }
+            if (headerApproveAllBtn) {
+                headerApproveAllBtn.disabled = true;
+                headerApproveAllBtn.innerHTML = '⏳ Aprobando todos...';
+            }
+
+            try {
+                let apiEndpoint = isProduction ? '/Consultas/api/aceptarTodosUsuarios' : '/Consultas/api/aceptarUsuariosAll';
+                
+                const response = await fetch(apiEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${userToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok || !isProduction) {
+                    // Animar la remoción de todos los usuarios
+                    userRows.forEach((row, index) => {
+                        setTimeout(() => {
+                            row.style.background = 'rgba(16, 185, 129, 0.1)';
+                            row.style.transition = 'all 0.3s ease';
+                            setTimeout(() => row.remove(), 300);
+                        }, index * 50);
+                    });
+
+                    // Actualizar UI después de las animaciones
+                    setTimeout(() => {
+                        showEmptyState();
+                    }, userRows.length * 50 + 500);
+
+                    showNotification(`✅ Todos los usuarios (${userRows.length}) fueron aprobados exitosamente`, 'success');
+                    console.log(`✅ ${userRows.length} usuarios aprobados masivamente`);
+                    
+                    // Limpiar array de usuarios pendientes
+                    pendingUsers = [];
+                } else {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('❌ Error en aprobación masiva:', error);
+                showNotification(`❌ Error al aprobar usuarios: ${error.message}`, 'error');
+            } finally {
+                // Rehabilitar botones
+                if (approveAllBtn) {
+                    approveAllBtn.disabled = false;
+                    approveAllBtn.innerHTML = originalText;
+                }
+                if (headerApproveAllBtn) {
+                    headerApproveAllBtn.disabled = false;
+                    headerApproveAllBtn.innerHTML = originalHeaderText;
+                }
+            }
+        }
+
+        // Funciones auxiliares
+        function getRoleText(role) {
+            if (typeof role === 'number') {
+                switch (parseInt(role)) {
+                    case 1: return 'Usuario';
+                    case 2: return 'Biomonitor';
+                    case 3: return 'Administrador';
+                    case 4: return 'Super Admin';
+                    default: return 'Sin rol';
+                }
+            } else {
+                return role || 'Sin rol';
+            }
+        }
+
+        function getStatusText(status) {
+            switch (status) {
+                case 'A': return 'Activo';
+                case 'P': return 'Pendiente';
+                case 'I': return 'Inactivo';
+                case 'pendiente': return 'Pendiente';
+                case 'activo': return 'Activo';
+                case 'inactivo': return 'Inactivo';
+                default: return 'Pendiente';
+            }
+        }
+
+        function getStatusClass(status) {
+            switch (status) {
+                case 'A':
+                case 'activo': return 'active';
+                case 'P':
+                case 'pendiente': return 'pending';
+                case 'I':
+                case 'inactivo': return 'inactive';
+                default: return 'pending';
+            }        }        // Función de logout
+        function logout() {
+            console.log('🚪 Cerrando sesión');
+            localStorage.removeItem('token');
+            localStorage.removeItem('userData');
+            showInfo('Cerrando sesión...', 2000);
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 1500);
+        }
+
+        // Función para aprobar todos (llamada desde botón del header)
+        function approveAllUsers() {
+            approveAllVisible();
+        }        // Cargar sidebar usando el sistema mejorado
+        async function loadSidebar() {
+            try {
+                const response = await fetch('components/admin-sidebar.html');
+                const sidebarHtml = await response.text();
+                document.getElementById('sidebar-container').innerHTML = sidebarHtml;
+                
+                // Establecer elemento activo
+                const activeItem = document.querySelector('[data-page="usuarios-pendientes"]');
+                if (activeItem) {
+                    activeItem.classList.add('active');
+                }
+                
+                console.log('✅ Sidebar cargado exitosamente');
+                
+                // Inicializar sidebar enhanced después de cargar
+                if (window.SidebarManager) {
+                    const sidebarManager = new window.SidebarManager();
+                } else {
+                    // Fallback al sistema anterior
+                    setupSidebarToggle();
+                }
+            } catch (error) {
+                console.error('❌ Error loading sidebar:', error);
+                showError('Error al cargar el menú lateral');
+            }
+        }
+
+        // Configurar toggle de sidebar (manejado automáticamente por SidebarSystem)
+        function setupSidebarToggle() {
+            console.log('✅ Sidebar toggle manejado por SidebarSystem');
+            // El nuevo sistema maneja esto automáticamente
+        }
+
+        // Actualizar información del usuario en el header
+        function updateUserInfo() {
+            const userData = localStorage.getItem('userData');
+            if (userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    const userNameElement = document.getElementById('userName');
+                    const userAvatarElement = document.getElementById('userAvatar');
+                    const userRoleElement = document.getElementById('userRole');
+                    
+                    if (user.name && userNameElement) {
+                        userNameElement.textContent = user.name;
+                    }
+                    if (user.name && userAvatarElement) {
+                        userAvatarElement.textContent = user.name.charAt(0).toUpperCase();
+                    }
+                    if (user.role && userRoleElement) {
+                        userRoleElement.textContent = getRoleText(user.role);
+                    }
+                } catch (e) {
+                    console.warn('⚠️ Error parsing user data:', e);
+                }
+            }
+        }
+
+        // Manejar teclas de acceso rápido
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', function(event) {
+                // Ctrl+R o F5 para actualizar
+                if ((event.ctrlKey && event.key === 'r') || event.key === 'F5') {
+                    event.preventDefault();
+                    loadPendingUsers();
+                    showNotification('Lista actualizada', 'info');
+                }
+                
+                // Escape para cerrar notificaciones
+                if (event.key === 'Escape') {
+                    const notifications = document.querySelectorAll('.notification');
+                    notifications.forEach(notification => notification.remove());
+                }
+            });
+        }
+
+        // Configurar actualización automática (opcional)
+        function setupAutoRefresh() {
+            // Actualizar cada 5 minutos
+            setInterval(() => {
+                console.log('🔄 Actualización automática');
+                loadPendingUsers();
+            }, 300000); // 5 minutos
+        }        // Inicialización cuando el DOM está listo
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎯 DOM cargado, inicializando página de usuarios pendientes');
+            
+            // Verificar autenticación
+            if (!checkAuth()) {
+                return;
+            }            // Cargar componentes
+            loadSidebar();
+            
+            // Cargar scripts de sidebar enhanced
+            const script = document.createElement('script');
+            script.src = 'js/sidebar-enhanced.js';
+            document.head.appendChild(script);
+
+            // Configurar funcionalidades
+            setupKeyboardShortcuts();
+            updateUserInfo();
+            
+            // Mostrar mensaje de bienvenida
+            setTimeout(() => {
+                showSuccess('Panel de usuarios pendientes cargado correctamente', 3000);
+            }, 1000);
+            
+            // Cargar usuarios pendientes automáticamente
+            loadPendingUsers();
+
+            // Configurar actualización automática (comentado por defecto)
+            // setupAutoRefresh();
+
+            console.log('✅ Página inicializada correctamente');
+        });
+    </script>
+</body>
+</html>

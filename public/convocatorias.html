@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Asistente de Convocatorias - Mawi</title>    <meta name="description" content="Asistente de Convocatorias" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="css/sidebar-styles.css" />
+  </head>  <body data-page="convocatorias">
+    <div class="mawi-app-container">
+      <header class="mawi-header">        
+        <div class="logo">
+          <img src="eye-icon.svg" alt="Mawi" class="eye-icon" />
+          <h2>Mawi</h2>
+        </div>
+        
+        <div class="user-menu">
+          <span>Usuario</span>
+          <div class="avatar-circle">
+            <img src="avatar-placeholder.svg" alt="Usuario" />
+          </div>
+          <button onclick="logout()" class="logout-btn" title="Cerrar sesión">
+            🚪
+          </button>
+        </div>
+      </header>      <!-- Botón toggle de la sidebar -->
+      <button class="sidebar-toggle" id="sidebarToggle" aria-label="Abrir/cerrar menú lateral">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9,18 15,12 9,6"></polyline>
+        </svg>
+      </button>
+
+      <div class="app-content with-sidebar">
+        <!-- Contenedor para la sidebar -->
+        <div id="sidebar-container"></div>        <!-- Main content -->
+        <main class="main-content">
+          <div class="biomo-header">
+            <h1>Gestión de Convocatorias</h1>
+          </div>
+
+          <!-- Panel de control superior -->
+          <div class="controls-panel">
+            <div class="search-filter-section">
+              <div class="search-container">
+                <input 
+                  type="text" 
+                  id="searchInput"
+                  class="search-input" 
+                  placeholder="🔍 Buscar convocatorias por nombre, organización, región..."
+                />
+              </div>
+              
+              <div class="filter-tabs">
+                <button class="filter-tab active" data-filter="todas">
+                  Todas <span class="count" id="count-todas">0</span>
+                </button>
+                <button class="filter-tab" data-filter="abiertas">
+                  Abiertas <span class="count" id="count-abiertas">0</span>
+                </button>
+                <button class="filter-tab" data-filter="cerradas">
+                  Cerradas <span class="count" id="count-cerradas">0</span>
+                </button>
+              </div>
+            </div>
+            
+            <div class="actions-section">
+              <button class="btn-export" id="exportBtn" title="Exportar convocatorias">
+                📥 Exportar
+              </button>
+              <button class="btn-primary" id="newConvocatoriaBtn">
+                ➕ Nueva Convocatoria
+              </button>
+            </div>
+          </div>
+
+          <!-- Vista de estadísticas rápidas -->
+          <div class="stats-overview" id="statsOverview">
+            <div class="stat-card">
+              <div class="stat-number" id="totalConvocatorias">0</div>
+              <div class="stat-label">Total Convocatorias</div>
+            </div>
+            <div class="stat-card urgent">
+              <div class="stat-number" id="proximasVencer">0</div>
+              <div class="stat-label">Próximas a vencer</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number" id="totalOrganizaciones">0</div>
+              <div class="stat-label">Organizaciones</div>
+            </div>
+          </div>
+
+          <!-- Lista de convocatorias -->
+          <div class="convocatorias-container">
+            <div class="convocatorias-grid" id="convocatoriasGrid">
+              <!-- Las convocatorias se cargarán aquí dinámicamente -->
+            </div>
+            
+            <!-- Estado vacío -->
+            <div class="empty-state" id="emptyState" style="display: none;">
+              <div class="empty-icon">📋</div>
+              <h3>No hay convocatorias</h3>
+              <p>Comienza agregando tu primera convocatoria</p>
+              <button class="btn-primary" onclick="openConvocatoriaModal()">
+                Crear Primera Convocatoria
+              </button>
+            </div>
+
+            <!-- Estado de búsqueda sin resultados -->
+            <div class="no-results" id="noResults" style="display: none;">
+              <div class="empty-icon">🔍</div>
+              <h3>Sin resultados</h3>
+              <p>No se encontraron convocatorias que coincidan con tu búsqueda</p>
+            </div>          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Modal para agregar/editar convocatoria -->
+    <div class="modal-overlay" id="convocatoriaModal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="modalTitle">Nueva Convocatoria</h2>
+          <button class="close-btn" id="closeModalBtn">&times;</button>
+        </div>
+
+        <form class="convocatoria-form" id="convocatoriaForm">
+          <div class="form-group">
+            <label for="convocatoria-name">Nombre de la convocatoria *</label>
+            <input 
+              type="text" 
+              id="convocatoria-name"
+              class="form-input" 
+              placeholder="¿Cómo vas a llamar a tu propuesta?"
+              required
+            />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="fecha-cierre">Fecha de cierre *</label>
+              <input 
+                type="date" 
+                id="fecha-cierre"
+                class="form-input" 
+                required
+              />
+            </div>
+            
+            <div class="form-group">
+              <label for="monto">Monto del financiamiento</label>
+              <input 
+                type="text" 
+                id="monto"
+                class="form-input" 
+                placeholder="Ej: $50,000 USD"
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="organizacion">Organización *</label>
+              <input 
+                type="text" 
+                id="organizacion"
+                class="form-input" 
+                placeholder="Nombre de la organización"
+                required
+              />
+            </div>
+            
+            <div class="form-group">
+              <label for="region">Región *</label>
+              <input 
+                type="text" 
+                id="region"
+                class="form-input" 
+                placeholder="Región del proyecto"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="pais">País o Zona Geográfica *</label>
+            <input 
+              type="text" 
+              id="pais"
+              class="form-input" 
+              placeholder="¿Para qué lugar se plantea el proyecto?"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="sitio-web">Sitio web (opcional)</label>
+            <input 
+              type="url" 
+              id="sitio-web"
+              class="form-input" 
+              placeholder="https://ejemplo.com"
+            />
+          </div>
+          
+          <div class="form-group">
+            <label for="descripcion">Descripción *</label>
+            <textarea
+              id="descripcion"
+              class="form-input" 
+              placeholder="Descripción detallada del proyecto y objetivos"
+              rows="4"
+              required
+            ></textarea>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" id="cancelBtn">Cancelar</button>
+            <button type="submit" class="btn-primary">
+              <span id="submitBtnText">Guardar Convocatoria</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+    <script src="js/sidebar-loader.js"></script>
+    <script src="js/admin-button.js"></script>
+    <script src="js/convocatorias.js"></script>
+    <script>
+
+      function decodeJWT(token) {
+        try {
+          const parts = token.split('.');
+          if (parts.length !== 3) {
+            throw new Error('Token invalido');
+          }
+
+          const payload = parts[1];
+          const paddedPayload = payload + '='.repeat((4 - payload.length % 4) % 4);
+          const decodedPayload = atob(paddedPayload);
+          return JSON.parse(decodedPayload);
+        } catch(error) {
+          console.error('Error al decodificar token', error);
+          return null;
+        }
+      }
+
+      async function loadUserName() {
+        try {
+          const token = localStorage.getItem('token');
+          if(!token) {
+            console.log('No se encontro token');
+            window.location.href = 'login.html';
+            return;
+          }
+
+          const payload = decodeJWT(token);
+          if(!payload) {
+            console.error('No se pudo deocidificar el token');
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+            return;
+          }
+
+          console.log('Payload del token:', payload);
+
+          let username = 'us';
+
+          if(payload.nombre) {
+            username = `${payload.nombre}`;
+          }
+
+          await loadUserProfileImage(payload.id, token, username);
+
+          const userMenuSpan = document.querySelector('.user-menu span');
+          if(userMenuSpan) {
+            userMenuSpan.textContent = username;
+            console.log('Nombre de usuario actualizado')
+          }
+          else {
+            console.error('No se encontro el elemento');
+          }
+
+          if(payload.exp) {
+            const currentTime = Math.floor(Date.now() / 1000);
+            if(payload.exp < currentTime) {
+              console.log('Token expirado, redirigiendo a login');
+              localStorage.removeItem('token');
+              window.location.href = 'login.html';
+              return;
+            }
+          }
+        } catch (error) {
+          console.error('Error cargando nombre de usuario:', error);
+          localStorage.removeItem('token');
+          window.location.href = 'login.html';
+        }
+      }
+
+      async function loadUserProfileImage(userId, token, username) {
+        try {
+          if(!userId) {
+            console.log('No se encontro ID de usuario');
+            return;
+          }
+
+          const response =  await fetch(`/Consultas/api/getUserProfileImage/${userId}`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if(!response.ok) {
+            console.log('No se encontro imagen de perfil')
+            return;
+          }
+
+          const data = await response.json();
+
+          if(data.status === 'success' && data.imageName) {
+            const imageUrl = `/uploads/usuarios/${data.imageName}`;
+
+            const avatarImg = document.querySelector('.avatar-circle img');
+            if(avatarImg) {
+              avatarImg.src = imageUrl;
+              avatarImg.alt = `${username} - Perfil`; 
+            } else
+            {
+              console.error('Usuario no tiene imagen');
+            }
+            
+          } else {
+            console.error('Error al obtener imagen de perfil');
+          }
+        } catch (error) {
+          console.log('Error al cargar imagen de perfil:', error);
+        }
+      }
+
+      function logout() {
+        localStorage.removeItem('token');
+        window.location.href = 'login.html';
+      }
+
+      document.addEventListener('DOMContentLoaded', function() {
+        loadUserName();
+      });
+
+      loadUserName();
+    </script>
+  </body>
+</html>

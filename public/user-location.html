@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Información de ubicación - Mawi</title>
+    <meta name="description" content="Información de ubicación en Mawi" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="mawi-auth-container">
+      <div class="mawi-auth-card">
+        <h1>¿De donde eres?</h1>
+        <p class="subtitle">Completa tu usuario agregando esta información</p>
+
+        <form id="userLocForm">
+          <div class="form-group">
+            <label for="country">País</label>
+            <!-- ✅ CAMBIAR: input por select -->
+            <select
+              id="country"
+              required
+              class="country-select"
+            >
+              <option value="">Cargando países...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="phone">Número telefónico</label>
+            <input
+              id="phone"
+              type="tel"
+              placeholder="Escribe tu número de teléfono"
+              required
+              pattern="[0-9]\s\-\(\)\+]{8,15}"
+              title="Solo numeros, espacios, guiones y parentesis."
+              minlength="8"
+              maxlength="12"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="region">Región/Provincia</label>
+            <input
+              id="region"
+              type="text"
+              placeholder="Escribe el nombre de tu región o provincia"
+              required
+              pattern="[A-Za-zÀ-ÿ\s\-\.]{2,50}"
+              maxlength="50"
+              title="Solo se permiten letras, espacios, guiones y puntos."
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="city">Ciudad</label>
+            <input
+              id="city"
+              type="text"
+              placeholder="Escribe el nombre de tu ciudad"
+              required
+              pattern="[A-Za-zÀ-ÿ\s\-\.]{2,50}"
+              title="Solo letras, espacios, guiones y puntos"
+              maxlength="50"
+            />
+          </div>
+
+          <button type="submit" class="mawi-button with-icon" id="next-btn">
+            Siguiente <span class="icon">→</span>
+          </button>
+        </form>
+
+        <div class="help-text">
+          <p>
+            ¿Necesitas ayuda? <a href="#" class="mawi-link">Contacta con nosotros</a>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ✅ NUEVO: Cargar países automáticamente
+      document.addEventListener('DOMContentLoaded', async function() {
+        try {
+          console.log('🌍 Cargando países...');
+          const response = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2');
+          const countries = await response.json();
+          
+          // Ordenar alfabéticamente
+          countries.sort((a, b) => a.name.common.localeCompare(b.name.common, 'es'));
+          
+          const select = document.getElementById('country');
+          select.innerHTML = '<option value="">Selecciona tu país</option>';
+          
+          countries.forEach(country => {
+            const option = document.createElement('option');
+            option.value = country.cca2; // Código: MX, US, ES, etc.
+            option.textContent = country.name.common; // Nombre: México, Estados Unidos, etc.
+            select.appendChild(option);
+          });
+          
+          console.log('✅ Países cargados correctamente');
+        } catch (error) {
+          console.error('❌ Error cargando países:', error);
+          // Fallback con países principales
+          const select = document.getElementById('country');
+          select.innerHTML = `
+            <option value="">Selecciona tu país</option>
+            <option value="MX">México</option>
+            <option value="US">Estados Unidos</option>
+            <option value="ES">España</option>
+            <option value="CO">Colombia</option>
+            <option value="AR">Argentina</option>
+            <option value="PE">Perú</option>
+            <option value="CL">Chile</option>
+            <option value="BR">Brasil</option>
+          `;
+        }
+      });
+      document.getElementById('phone').addEventListener('input', function(e) {
+  let value = this.value;
+  
+  // 1. Eliminar caracteres no permitidos básicos
+  value = value.replace(/[^0-9\s\-\(\)\+]/g, '');
+  
+  // 2. ✅ NUEVO: Limitar a solo un símbolo +
+  const plusCount = (value.match(/\+/g) || []).length;
+  if (plusCount > 1) {
+    // Mantener solo el primer +
+    value = value.replace(/\+/g, (match, offset) => {
+      return value.indexOf('+') === offset ? '+' : '';
+    });
+  }
+  
+  // 3. ✅ NUEVO: Limitar a máximo 2 guiones -
+  const dashCount = (value.match(/\-/g) || []).length;
+  if (dashCount > 2) {
+    // Mantener solo los primeros 2 guiones
+    let dashesFound = 0;
+    value = value.replace(/\-/g, (match) => {
+      dashesFound++;
+      return dashesFound <= 2 ? '-' : '';
+    });
+  }
+  
+  // 4. ✅ NUEVO: El + solo puede estar al inicio
+  if (value.includes('+') && value.indexOf('+') !== 0) {
+    // Mover el + al inicio y eliminar otros +
+    value = '+' + value.replace(/\+/g, '');
+  }
+  // 5. Limitar longitud total
+  if (value.length > 15) {
+    value = value.slice(0, 15);
+  }
+  
+  this.value = value;
+});
+      // ✅ MODIFICADO: Form handler
+      document.getElementById('userLocForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const countrySelect = document.getElementById('country');
+        const countryCode = countrySelect.value;
+        const countryName = countrySelect.options[countrySelect.selectedIndex].text;
+        
+        // Validación básica
+        if (!countryCode) {
+          alert('Por favor selecciona tu país');
+          return;
+        }
+        
+        const locationData = {
+          country: countryCode,     // Código: MX, US, ES
+          countryName: countryName, // Nombre completo: México, Estados Unidos
+          phone: document.getElementById('phone').value,
+          region: document.getElementById('region').value,
+          city: document.getElementById('city').value
+        };
+        
+        localStorage.setItem('user-location', JSON.stringify(locationData));
+        console.log('📍 Datos guardados:', locationData);
+        
+        window.location.href = 'user-organization.html';
+      });
+    </script>
+
+    <!-- Keep the GPT Engineer script tag -->
+    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+  </body>
+</html>

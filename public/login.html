@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Iniciar sesión - Mawi</title>    <meta name="description" content="Iniciar sesión en Mawi" />    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="mawi-auth-container">
+      <div class="mawi-auth-card">
+        <h1>Iniciar sesión</h1>
+        <p class="link-text">
+          <a href="signup.html" class="mawi-link">¿Crear cuenta?</a>
+        </p>        <form id="loginForm">
+          <div class="form-group">
+            <label for="email">Correo electrónico</label>
+            <input
+              id="email"
+              type="email"
+              placeholder="Escribe tu correo"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="password">Contraseña</label>
+            <input
+              id="password"
+              type="password"
+              placeholder="Escribe tu contraseña"
+              required
+            />
+            <div class="forgot-password">
+              <a href="recover-password.html" class="mawi-link">¿Has olvidado tu contraseña?</a>
+            </div>
+          </div>
+
+          <button type="submit" class="mawi-button" id="loginBtn">
+            Iniciar sesión
+          </button>
+        </form>        <div class="help-text">
+          <p>
+            ¿Necesitas ayuda? <a href="#" class="mawi-link">Contacta con nosotros</a>
+          </p>
+        </div>
+        
+        <div class="nav-link">
+          <a href="index.html" class="mawi-link">Volver al inicio</a>
+        </div>
+      </div>    </div>    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('🎯 DOM cargado, inicializando login...');
+        
+        const loginForm = document.getElementById('loginForm');
+        if (!loginForm) {
+          console.error('❌ No se encontró el formulario de login');
+          return;
+        }
+        
+        loginForm.addEventListener('submit', async function(event) {
+          event.preventDefault();
+          event.stopPropagation();
+          
+          console.log('🔄 Iniciando proceso de login...');
+
+          const email = document.getElementById('email').value;
+          const password = document.getElementById('password').value;
+          const loginBtn = document.getElementById('loginBtn');
+
+          console.log('📧 Email:', email);
+          console.log('🔑 Password length:', password.length);
+
+          // Validación básica
+          if (!email || !password) {
+            alert('Por favor completa todos los campos');
+            return;
+          }
+
+          // Mostrar loading básico
+          loginBtn.disabled = true;
+          loginBtn.textContent = 'Iniciando sesión...';
+
+          try {
+            console.log('📡 Enviando petición a /Consultas/api/login');
+            
+            const response = await fetch('/Consultas/api/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email, password })
+            });
+
+            console.log('📊 Response status:', response.status);
+            console.log('📊 Response ok:', response.ok);
+
+            const data = await response.json();
+            console.log('📄 Response data:', data);
+            
+            if (response.ok && data.token) {
+              console.log('✅ Login exitoso, procesando token...');
+              
+              try {
+                const payload = JSON.parse(atob(data.token.split('.')[1]));
+                console.log('🔍 Token payload:', payload);
+                
+                const rol = data.rol || payload.rol;
+                const estado = data.estado || payload.estado;
+                const nombre = data.nombre || payload.nombre || payload.name;
+                
+                console.log('👤 Usuario:', { rol, estado, nombre });
+
+                // Verificar si el usuario está activo
+                if (estado !== 'A' && estado !== 'active') {
+                  alert('Usuario inactivo. Espera la activación de tu cuenta por correo electrónico.');
+                  return;
+                }
+
+                // Guardar token y datos del usuario
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('userData', JSON.stringify({
+                  name: nombre,
+                  email: email,
+                  role: rol,
+                  status: estado
+                }));
+                
+                console.log('🎯 Redirigiendo según rol:', rol);
+
+                // Redirección directa sin delays
+                switch (parseInt(rol)) {
+                  case 1: // Usuario básico
+                    console.log('➡️ Redirigiendo a dashboard.html');
+                    window.location.href = 'dashboard.html';
+                    break;
+                    
+                  case 2: // Líder/Biomonitor
+                    console.log('➡️ Redirigiendo a dashboard.html');
+                    window.location.href = 'dashboard.html';
+                    break;
+                    
+                  case 3: // Administrador
+                    console.log('➡️ Redirigiendo a indexAdmin.html');
+                    window.location.href = 'indexAdmin.html';
+                    break;
+                    
+                  case 4: // Super Administrador
+                    console.log('➡️ Redirigiendo a indexSAdmin.html');
+                    window.location.href = 'indexSAdmin.html';
+                    break;
+                    
+                  default:
+                    console.log('➡️ Rol no reconocido, redirigiendo a dashboard.html');
+                    window.location.href = 'dashboard.html';
+                }
+                
+              } catch (tokenError) {
+                console.error('❌ Error procesando token:', tokenError);
+                alert('Error procesando datos de usuario');
+              }
+              
+            } else {
+              console.log('❌ Login fallido');
+              
+              // Mostrar mensaje de error más específico
+              const errorMessage = data.message || data.error || 'Credenciales incorrectas';
+              alert(`Error de autenticación: ${errorMessage}`);
+            }
+            
+          } catch (error) {
+            console.error('❌ Error en login:', error);
+            
+            // Verificar si es un error de conexión
+            if (error.name === 'TypeError' && error.message.includes('fetch')) {
+              alert('Error de conexión. Verifica que el servidor esté funcionando.');
+            } else {
+              alert(`Error inesperado: ${error.message}`);
+            }
+          } finally {
+            // Rehabilitar botón
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'Iniciar sesión';
+            console.log('🔄 Proceso de login finalizado');
+          }
+        });      });
+    </script>
+    
+    <!-- Keep the GPT Engineer script tag -->
+    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+  </body>
+</html>

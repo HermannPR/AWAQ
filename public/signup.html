@@ -1,0 +1,176 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Crear cuenta - Mawi</title>    <meta name="description" content="Crear cuenta en Mawi" />    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="css/form-validation.css" />
+  </head>
+  <body>
+    <div class="mawi-auth-container">
+      <div class="mawi-auth-card">
+        <h1>Crear cuenta</h1>
+        <p class="link-text">
+          <a href="login.html" class="mawi-link">¿Iniciar sesión?</a>
+        </p>        <form id="signup-form" data-validate>
+          <div class="form-group">
+            <label for="firstName">Nombre*</label>
+            <input
+              id="firstName"
+              type="text"
+              placeholder="Escribe tu nombre"
+              data-required="true"
+              data-validate="name"
+              data-min="2"
+              data-max="50"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="lastName">Apellidos*</label>
+            <input
+              id="lastName"
+              type="text"
+              placeholder="Escribe tus apellidos"
+              data-required="true"
+              data-validate="name"
+              data-min="2"
+              data-max="50"
+              pattern="[A-Za-zÀ-ÿ\s]+"
+              title="Solo se permiten letras y espacios"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="email">Correo electrónico*</label>
+            <input
+              id="email"
+              type="email"
+              placeholder="Escribe tu correo"
+              data-required="true"
+              data-validate="email"
+              data-max="100"
+              required
+              maxlength="100"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="password">Contraseña*</label>
+            <input
+              id="password"
+              type="password"
+              placeholder="Escribe una contraseña (mín. 6 caracteres)"
+              data-required="true"
+              data-validate="password"
+              data-min="6"
+              data-max="50"
+              required
+              minlength="6"
+              maxlength="50"
+            />
+          </div>
+
+          <button type="submit" class="mawi-button with-icon" id="signupBtn">
+            Siguiente <span class="icon">→</span>
+          </button>
+        </form>
+
+        <div class="help-text">
+          <p>
+            ¿Necesitas ayuda? <a href="#" class="mawi-link">Contacta con nosotros</a>
+          </p>
+        </div>
+        
+        <div class="nav-link">
+          <a href="index.html" class="mawi-link">Volver al inicio</a>
+        </div>
+      </div>    </div>    <script src="js/form-validation.js"></script>
+    <script>
+      document.getElementById('signup-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Validar formulario
+        const isValid = await validateForm(this);
+        if (!isValid) {
+          showWarning('Por favor corrige los errores en el formulario');
+          return;
+        }
+
+        const signupBtn = document.getElementById('signupBtn');
+        const originalText = signupBtn.innerHTML;
+        
+        // Mostrar loading
+        const loadingId = showLoading('Preparando registro...');
+        signupBtn.disabled = true;
+        signupBtn.innerHTML = '<span class="loading-spinner-small"></span> Procesando...';
+
+        try {
+          // Obtener datos del formulario
+          const formData = {
+            nombre: document.getElementById('firstName').value.trim(),
+            apellidos: document.getElementById('lastName').value.trim(),
+            email: document.getElementById('email').value.trim().toLowerCase(),
+            password: document.getElementById('password').value
+          };
+
+          // Validaciones adicionales
+          if (formData.nombre.length < 2) {
+            throw new Error('El nombre debe tener al menos 2 caracteres');
+          }
+          
+          if (formData.apellidos.length < 2) {
+            throw new Error('Los apellidos deben tener al menos 2 caracteres');
+          }
+          
+          if (formData.password.length < 6) {
+            throw new Error('La contraseña debe tener al menos 6 caracteres');
+          }
+
+          // Simular proceso de validación
+          await new Promise(resolve => setTimeout(resolve, 1000));        // Guardar datos temporalmente
+          localStorage.setItem('signupData', JSON.stringify(formData));
+          
+          alert('Datos validados correctamente');
+          
+          // Redirigir después de un breve delay
+          setTimeout(() => {
+            window.location.href = 'profile-image.html';
+          }, 1500);
+          
+        } catch (error) {
+          console.error('Error en signup:', error);
+          alert(error.message || 'Error al procesar el registro');
+        } finally {
+          // Rehabilitar botón
+          signupBtn.disabled = false;
+          signupBtn.innerHTML = originalText;
+        }
+      });
+
+      // Validar email en tiempo real cuando el usuario deja el campo
+      document.getElementById('email').addEventListener('blur', async function() {
+        const email = this.value.trim();
+        if (email && email.includes('@')) {
+          try {
+            // Simular verificación de email existente
+            await new Promise(resolve => setTimeout(resolve, 800));
+            
+            // Aquí podrías hacer una llamada real al backend para verificar si el email existe
+            // const response = await fetch('/api/check-email', { ... });
+            
+            console.log('Email disponible');
+          } catch (error) {
+            alert('Error al verificar email');
+          }
+        }
+      });
+    </script>
+    
+    <!-- Keep the GPT Engineer script tag -->
+    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+  </body>
+</html>
